@@ -6,6 +6,9 @@ import { useAuth } from '../context/AuthContext';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
 import HomeScreen from '../screens/HomeScreen';
+import TheatresScreen from '../screens/TheatresScreen';
+import ShowsScreen from '../screens/ShowsScreen';
+import ShowDetailsScreen from '../screens/ShowDetailsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -24,7 +27,12 @@ export default function AppNavigator() {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {token ? (
-          <Stack.Screen name="Home" component={HomeScreen} />
+          <>
+            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="Theatres" component={TheatresScreen} />
+            <Stack.Screen name="Shows" component={ShowsScreen} />
+            <Stack.Screen name="ShowDetails" component={ShowDetailsScreen} />
+          </>
         ) : (
           <>
             <Stack.Screen name="Login" component={LoginScreen} />
