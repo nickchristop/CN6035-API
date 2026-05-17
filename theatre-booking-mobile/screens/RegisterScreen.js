@@ -28,13 +28,33 @@ export default function RegisterScreen({ navigation }) {
     setError('');
     setLoading(true);
     try {
-      await api.post('/auth/register', {
+      const registerPath = '/auth/register';
+      const payload = {
         name: trimmedName,
         email: trimmedEmail,
         password,
+      };
+
+      console.log('Register request: sending', {
+        baseURL: api.defaults.baseURL,
+        path: registerPath,
+        email: trimmedEmail,
       });
+
+      const response = await api.post(registerPath, payload);
+
+      console.log('Register request: success', {
+        status: response.status,
+        data: response.data,
+      });
+
       navigation.navigate('Login');
     } catch (err) {
+      console.log('Register request: error', {
+        message: err.message,
+        data: err.response?.data,
+      });
+
       setError(err.response?.data?.message ?? 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
