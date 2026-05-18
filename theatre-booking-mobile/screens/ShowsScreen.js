@@ -4,8 +4,10 @@ import {
   Button,
   FlatList,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import api from '../services/api';
@@ -26,16 +28,34 @@ function showIdFor(show) {
   return show?.show_id ?? show?.id;
 }
 
+function theatreIdFor(theatre) {
+  return theatre?.theatre_id ?? theatre?.id;
+}
+
 export default function ShowsScreen({ navigation }) {
   const [shows, setShows] = useState([]);
+  const [theatres, setTheatres] = useState([]);
+  const [titleQuery, setTitleQuery] = useState('');
+  const [selectedTheatreId, setSelectedTheatreId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  async function loadShows() {
+  async function loadShows({ title = titleQuery, theatreId = selectedTheatreId } = {}) {
     setError('');
     setLoading(true);
     try {
-      const response = await api.get('/shows');
+      const params = {};
+      const trimmedTitle = title.trim();
+
+      if (trimmedTitle) {
+        params.title = trimmedTitle;
+      }
+
+      if (theatreId) {
+        params.theatre_id = theatreId;
+      }
+
+      const response = await api.get('/shows', { params });
       setShows(asList(response.data));
     } catch (err) {
       setError(err.response?.data?.message ?? err.message ?? 'Unable to load shows.');
@@ -44,8 +64,33 @@ export default function ShowsScreen({ navigation }) {
     }
   }
 
+  async function loadTheatres() {
+    try {
+      const response = await api.get('/theatres');
+      setTheatres(asList(response.data));
+    } catch {
+      setTheatres([]);
+    }
+  }
+
+  function searchShows() {
+    loadShows();
+  }
+
+  function selectTheatre(theatreId) {
+    setSelectedTheatreId(theatreId);
+    loadShows({ theatreId });
+  }
+
+  function clearFilters() {
+    setTitleQuery('');
+    setSelectedTheatreId(null);
+    loadShows({ title: '', theatreId: null });
+  }
+
   useEffect(() => {
     loadShows();
+    loadTheatres();
   }, []);
 
   if (loading) {
@@ -60,6 +105,46 @@ export default function ShowsScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Shows</Text>
+      <View style={styles.filters}>
+        <TextInput
+          style={styles.input}
+          placeholder="Search show title"
+          value={titleQuery}
+          onChangeText={setTitleQuery}
+          returnKeyType="search"
+          onSubmitEditing={searchShows}
+        />
+        <View style={styles.filterActions}>
+          <Button title="Search" onPress={searchShows} />
+          <Button title="Clear" onPress={clearFilters} />
+        </View>
+        {theatres.length ? (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.theatreFilters}>
+            <Pressable
+              style={[styles.filterChip, selectedTheatreId === null && styles.filterChipActive]}
+              onPress={() => selectTheatre(null)}
+            >
+              <Text style={selectedTheatreId === null ? styles.filterChipTextActive : styles.filterChipText}>All</Text>
+            </Pressable>
+            {theatres.map((theatre, index) => {
+              const theatreId = theatreIdFor(theatre);
+              const isSelected = selectedTheatreId === theatreId;
+
+              return (
+                <Pressable
+                  key={String(theatreId ?? index)}
+                  style={[styles.filterChip, isSelected && styles.filterChipActive]}
+                  onPress={() => selectTheatre(theatreId)}
+                >
+                  <Text style={isSelected ? styles.filterChipTextActive : styles.filterChipText}>
+                    {valueFor(theatre, ['name', 'theatre_name'], 'Theatre')}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        ) : null}
+      </View>
       {error ? (
         <View style={styles.messageBlock}>
           <Text style={styles.error}>{error}</Text>
@@ -101,6 +186,14 @@ const styles = StyleSheet.create({
   messageBlock: { marginBottom: 16 },
   error: { color: '#cc0000', marginBottom: 8 },
   empty: { color: '#555', textAlign: 'center', marginTop: 24 },
+  filters: { marginBottom: 16 },
+  input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 6, padding: 10, marginBottom: 10 },
+  filterActions: { gap: 8, marginBottom: 10 },
+  theatreFilters: { marginTop: 2 },
+  filterChip: { borderWidth: 1, borderColor: '#bbb', borderRadius: 6, paddingVertical: 8, paddingHorizontal: 12, marginRight: 8 },
+  filterChipActive: { backgroundColor: '#007AFF', borderColor: '#007AFF' },
+  filterChipText: { color: '#222' },
+  filterChipTextActive: { color: '#fff', fontWeight: '600' },
   item: { borderWidth: 1, borderColor: '#ddd', borderRadius: 6, padding: 14, marginBottom: 12 },
   itemPressed: { backgroundColor: '#f1f6ff' },
   itemTitle: { fontSize: 18, fontWeight: '600', marginBottom: 6 },

@@ -5,6 +5,7 @@ import {
   FlatList,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import api from '../services/api';
@@ -22,7 +23,9 @@ function valueFor(item, keys, fallback = 'Not provided') {
 }
 
 export default function TheatresScreen({ navigation }) {
+  const [allTheatres, setAllTheatres] = useState([]);
   const [theatres, setTheatres] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -31,12 +34,38 @@ export default function TheatresScreen({ navigation }) {
     setLoading(true);
     try {
       const response = await api.get('/theatres');
-      setTheatres(asList(response.data));
+      const nextTheatres = asList(response.data);
+      setAllTheatres(nextTheatres);
+      setTheatres(filterTheatres(nextTheatres, searchQuery));
     } catch (err) {
       setError(err.response?.data?.message ?? err.message ?? 'Unable to load theatres.');
     } finally {
       setLoading(false);
     }
+  }
+
+  function filterTheatres(theatreList, query) {
+    const trimmedQuery = query.trim().toLowerCase();
+
+    if (!trimmedQuery) {
+      return theatreList;
+    }
+
+    return theatreList.filter(theatre => {
+      const name = valueFor(theatre, ['name', 'theatre_name'], '').toLowerCase();
+      const location = valueFor(theatre, ['location', 'address', 'city'], '').toLowerCase();
+
+      return name.includes(trimmedQuery) || location.includes(trimmedQuery);
+    });
+  }
+
+  function searchTheatres() {
+    setTheatres(filterTheatres(allTheatres, searchQuery));
+  }
+
+  function clearSearch() {
+    setSearchQuery('');
+    setTheatres(allTheatres);
   }
 
   useEffect(() => {
@@ -55,6 +84,20 @@ export default function TheatresScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Theatres</Text>
+      <View style={styles.filters}>
+        <TextInput
+          style={styles.input}
+          placeholder="Search theatre or location"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          returnKeyType="search"
+          onSubmitEditing={searchTheatres}
+        />
+        <View style={styles.filterActions}>
+          <Button title="Search" onPress={searchTheatres} />
+          <Button title="Clear" onPress={clearSearch} />
+        </View>
+      </View>
       {error ? (
         <View style={styles.messageBlock}>
           <Text style={styles.error}>{error}</Text>
@@ -86,6 +129,9 @@ const styles = StyleSheet.create({
   messageBlock: { marginBottom: 16 },
   error: { color: '#cc0000', marginBottom: 8 },
   empty: { color: '#555', textAlign: 'center', marginTop: 24 },
+  filters: { marginBottom: 16 },
+  input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 6, padding: 10, marginBottom: 10 },
+  filterActions: { gap: 8 },
   item: { borderWidth: 1, borderColor: '#ddd', borderRadius: 6, padding: 14, marginBottom: 12 },
   itemTitle: { fontSize: 18, fontWeight: '600', marginBottom: 6 },
   itemText: { color: '#444', marginTop: 2 },
