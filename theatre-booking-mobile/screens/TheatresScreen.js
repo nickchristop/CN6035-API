@@ -7,6 +7,7 @@ import ScreenContainer from '../components/ScreenContainer';
 import { EmptyState, ErrorState, LoadingState } from '../components/StateView';
 import { MetaRow, ScreenHeader, Pill } from '../components/TextBits';
 import { colors, spacing } from '../theme';
+import { displayValue } from '../utils/formatters';
 import api from '../services/api';
 
 function asList(data) {
@@ -14,11 +15,6 @@ function asList(data) {
   if (Array.isArray(data?.theatres)) return data.theatres;
   if (Array.isArray(data?.data)) return data.data;
   return [];
-}
-
-function valueFor(item, keys, fallback = 'Not provided') {
-  const value = keys.map(key => item?.[key]).find(itemValue => itemValue !== undefined && itemValue !== null && itemValue !== '');
-  return value === undefined ? fallback : String(value);
 }
 
 export default function TheatresScreen({ navigation }) {
@@ -51,8 +47,8 @@ export default function TheatresScreen({ navigation }) {
     }
 
     return theatreList.filter(theatre => {
-      const name = valueFor(theatre, ['name', 'theatre_name'], '').toLowerCase();
-      const location = valueFor(theatre, ['location', 'address', 'city'], '').toLowerCase();
+      const name = displayValue(theatre, ['name', 'theatre_name'], '').toLowerCase();
+      const location = displayValue(theatre, ['location', 'address', 'city'], '').toLowerCase();
 
       return name.includes(trimmedQuery) || location.includes(trimmedQuery);
     });
@@ -80,14 +76,15 @@ export default function TheatresScreen({ navigation }) {
   }
 
   return (
-    <ScreenContainer>
+    <ScreenContainer compact>
       <ScreenHeader
         eyebrow="Venues"
         title="Theatres"
         subtitle="Explore venues by name, location, and capacity."
+        compact
       />
 
-      <AppCard style={styles.filterCard}>
+      <AppCard compact style={styles.filterCard}>
         <AppInput
           label="Search"
           placeholder="Search theatre or location"
@@ -95,10 +92,11 @@ export default function TheatresScreen({ navigation }) {
           onChangeText={setSearchQuery}
           returnKeyType="search"
           onSubmitEditing={searchTheatres}
+          compact
         />
         <View style={styles.filterActions}>
-          <AppButton title="Search" onPress={searchTheatres} />
-          <AppButton title="Clear" onPress={clearSearch} variant="secondary" />
+          <AppButton title="Search" onPress={searchTheatres} compact />
+          <AppButton title="Clear" onPress={clearSearch} variant="secondary" compact />
         </View>
       </AppCard>
 
@@ -110,27 +108,31 @@ export default function TheatresScreen({ navigation }) {
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={!error ? <EmptyState message="No theatres found." /> : null}
         renderItem={({ item }) => (
-          <AppCard style={styles.item}>
+          <AppCard compact style={styles.item}>
             <View style={styles.cardHeader}>
-              <Text style={styles.itemTitle}>{valueFor(item, ['name', 'theatre_name'], 'Untitled theatre')}</Text>
+              <Text style={styles.itemTitle}>{displayValue(item, ['name', 'theatre_name'], 'Untitled theatre')}</Text>
               <Pill tone="accent">Venue</Pill>
             </View>
-            <MetaRow label="Location" value={valueFor(item, ['location', 'address', 'city'])} />
-            <MetaRow label="Capacity" value={valueFor(item, ['capacity', 'total_seats'])} />
+            <View style={styles.metaGrid}>
+              <MetaRow label="Location" value={displayValue(item, ['location', 'address', 'city'])} />
+              <MetaRow label="Capacity" value={displayValue(item, ['capacity', 'total_seats'])} />
+              <MetaRow label="Description" value={displayValue(item, ['description', 'details'])} />
+            </View>
           </AppCard>
         )}
       />
 
-      <AppButton title="Back to Home" onPress={() => navigation.navigate('Home')} variant="ghost" />
+      <AppButton title="Back to Home" onPress={() => navigation.navigate('Home')} variant="ghost" compact />
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
   filterCard: {
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
   },
   filterActions: {
+    flexDirection: 'row',
     gap: spacing.sm,
   },
   listContent: {
@@ -140,12 +142,19 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   cardHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
     gap: spacing.md,
+    justifyContent: 'space-between',
     marginBottom: spacing.sm,
   },
   itemTitle: {
     color: colors.text,
     fontSize: 20,
     fontWeight: '800',
+    flex: 1,
+  },
+  metaGrid: {
+    gap: spacing.xs,
   },
 });

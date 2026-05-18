@@ -2,7 +2,7 @@ import React from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 import { colors, radius, spacing } from '../theme';
 
-export default function AppButton({ title, onPress, variant = 'primary', disabled = false, loading = false, style }) {
+export default function AppButton({ title, onPress, variant = 'primary', disabled = false, loading = false, compact = false, style }) {
   const isDisabled = disabled || loading;
 
   return (
@@ -12,6 +12,7 @@ export default function AppButton({ title, onPress, variant = 'primary', disable
       onPress={onPress}
       style={({ pressed }) => [
         styles.button,
+        compact && styles.compact,
         styles[variant],
         pressed && !isDisabled && styles[`${variant}Pressed`],
         isDisabled && styles.disabled,
@@ -31,13 +32,18 @@ export default function AppButton({ title, onPress, variant = 'primary', disable
 
 const styles = StyleSheet.create({
   button: {
-    minHeight: 48,
+    minHeight: 46,
     borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     borderWidth: 1,
+  },
+  compact: {
+    minHeight: 40,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
   },
   primary: {
     backgroundColor: colors.primary,

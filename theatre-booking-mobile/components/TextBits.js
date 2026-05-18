@@ -2,11 +2,11 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { colors, spacing, typography } from '../theme';
 
-export function ScreenHeader({ eyebrow, title, subtitle }) {
+export function ScreenHeader({ eyebrow, title, subtitle, compact = false }) {
   return (
-    <View style={styles.header}>
+    <View style={[styles.header, compact && styles.headerCompact]}>
       {eyebrow ? <Text style={styles.eyebrow}>{eyebrow}</Text> : null}
-      <Text style={styles.title}>{title}</Text>
+      <Text style={[styles.title, compact && styles.titleCompact]}>{title}</Text>
       {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
     </View>
   );
@@ -17,6 +17,10 @@ export function SectionTitle({ children }) {
 }
 
 export function MetaRow({ label, value }) {
+  if (value === undefined || value === null || value === '') {
+    return null;
+  }
+
   return (
     <View style={styles.metaRow}>
       <Text style={styles.metaLabel}>{label}</Text>
@@ -27,8 +31,21 @@ export function MetaRow({ label, value }) {
 
 export function Pill({ children, tone = 'default', style }) {
   return (
-    <View style={[styles.pill, tone === 'accent' && styles.pillAccent, tone === 'danger' && styles.pillDanger, style]}>
-      <Text style={[styles.pillText, tone === 'accent' && styles.pillAccentText, tone === 'danger' && styles.pillDangerText]}>
+    <View style={[
+      styles.pill,
+      tone === 'accent' && styles.pillAccent,
+      tone === 'danger' && styles.pillDanger,
+      tone === 'success' && styles.pillSuccess,
+      tone === 'muted' && styles.pillMuted,
+      style,
+    ]}>
+      <Text style={[
+        styles.pillText,
+        tone === 'accent' && styles.pillAccentText,
+        tone === 'danger' && styles.pillDangerText,
+        tone === 'success' && styles.pillSuccessText,
+        tone === 'muted' && styles.pillMutedText,
+      ]}>
         {children}
       </Text>
     </View>
@@ -37,7 +54,12 @@ export function Pill({ children, tone = 'default', style }) {
 
 const styles = StyleSheet.create({
   header: {
-    marginBottom: spacing.xl,
+    marginBottom: spacing.lg,
+    paddingTop: spacing.sm,
+  },
+  headerCompact: {
+    marginBottom: spacing.md,
+    paddingTop: 0,
   },
   eyebrow: {
     color: colors.accent,
@@ -49,8 +71,12 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.title,
-    fontSize: 30,
-    lineHeight: 36,
+    fontSize: 28,
+    lineHeight: 33,
+  },
+  titleCompact: {
+    fontSize: 24,
+    lineHeight: 30,
   },
   subtitle: {
     ...typography.subtitle,
@@ -63,7 +89,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   metaRow: {
-    marginTop: spacing.sm,
+    marginTop: spacing.xs,
   },
   metaLabel: {
     ...typography.label,
@@ -71,7 +97,7 @@ const styles = StyleSheet.create({
   metaValue: {
     color: colors.text,
     fontSize: 15,
-    lineHeight: 21,
+    lineHeight: 20,
     marginTop: spacing.xs,
   },
   pill: {
@@ -91,6 +117,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#3a1f24',
     borderColor: colors.danger,
   },
+  pillSuccess: {
+    backgroundColor: '#1a3324',
+    borderColor: colors.success,
+  },
+  pillMuted: {
+    backgroundColor: colors.backgroundAlt,
+    borderColor: colors.border,
+  },
   pillText: {
     color: colors.textMuted,
     fontSize: 12,
@@ -101,5 +135,11 @@ const styles = StyleSheet.create({
   },
   pillDangerText: {
     color: '#ffd8d8',
+  },
+  pillSuccessText: {
+    color: '#d9f5e3',
+  },
+  pillMutedText: {
+    color: colors.textSubtle,
   },
 });

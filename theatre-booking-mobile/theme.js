@@ -32,7 +32,7 @@ export const spacing = {
 export const radius = {
   sm: 6,
   md: 10,
-  lg: 16,
+  lg: 14,
   pill: 999,
 };
 
@@ -59,7 +59,7 @@ export const typography = {
   title: {
     color: colors.text,
     fontSize: fontSizes.xl,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   subtitle: {
     color: colors.textMuted,

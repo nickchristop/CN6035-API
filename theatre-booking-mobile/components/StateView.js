@@ -56,8 +56,8 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     borderRadius: 16,
     borderWidth: 1,
-    marginVertical: spacing.md,
-    padding: spacing.lg,
+    marginVertical: spacing.sm,
+    padding: spacing.md,
   },
   empty: {
     color: colors.textMuted,

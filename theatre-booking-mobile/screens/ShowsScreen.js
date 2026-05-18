@@ -7,6 +7,7 @@ import ScreenContainer from '../components/ScreenContainer';
 import { EmptyState, ErrorState, LoadingState } from '../components/StateView';
 import { MetaRow, ScreenHeader } from '../components/TextBits';
 import { colors, radius, spacing } from '../theme';
+import { displayValue, formatDate, formatTime } from '../utils/formatters';
 import api from '../services/api';
 
 function asList(data) {
@@ -14,11 +15,6 @@ function asList(data) {
   if (Array.isArray(data?.shows)) return data.shows;
   if (Array.isArray(data?.data)) return data.data;
   return [];
-}
-
-function valueFor(item, keys, fallback = 'Not provided') {
-  const value = keys.map(key => item?.[key]).find(itemValue => itemValue !== undefined && itemValue !== null && itemValue !== '');
-  return value === undefined ? fallback : String(value);
 }
 
 function showIdFor(show) {
@@ -99,14 +95,15 @@ export default function ShowsScreen({ navigation }) {
   }
 
   return (
-    <ScreenContainer>
+    <ScreenContainer compact>
       <ScreenHeader
         eyebrow="Now playing"
         title="Shows"
         subtitle="Search titles, filter by theatre, and tap a show to reserve seats."
+        compact
       />
 
-      <AppCard style={styles.filterCard}>
+      <AppCard compact style={styles.filterCard}>
         <AppInput
           label="Show title"
           placeholder="Search show title"
@@ -114,10 +111,11 @@ export default function ShowsScreen({ navigation }) {
           onChangeText={setTitleQuery}
           returnKeyType="search"
           onSubmitEditing={searchShows}
+          compact
         />
         <View style={styles.filterActions}>
-          <AppButton title="Search" onPress={searchShows} />
-          <AppButton title="Clear" onPress={clearFilters} variant="secondary" />
+          <AppButton title="Search" onPress={searchShows} compact />
+          <AppButton title="Clear" onPress={clearFilters} variant="secondary" compact />
         </View>
         {theatres.length ? (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.theatreFilters}>
@@ -138,7 +136,7 @@ export default function ShowsScreen({ navigation }) {
                   onPress={() => selectTheatre(theatreId)}
                 >
                   <Text style={isSelected ? styles.filterChipTextActive : styles.filterChipText}>
-                    {valueFor(theatre, ['name', 'theatre_name'], 'Theatre')}
+                    {displayValue(theatre, ['name', 'theatre_name'], 'Theatre')}
                   </Text>
                 </Pressable>
               );
@@ -163,12 +161,14 @@ export default function ShowsScreen({ navigation }) {
               onPress={() => navigation.navigate('ShowDetails', { showId })}
               style={({ pressed }) => [pressed && styles.cardPressed]}
             >
-              <AppCard style={styles.item}>
-                <Text style={styles.itemTitle}>{valueFor(item, ['title', 'name', 'show_name'], 'Untitled show')}</Text>
-                <MetaRow label="Theatre" value={valueFor(item, ['theatre_name', 'theatre', 'venue'])} />
+              <AppCard compact style={styles.item}>
+                <Text style={styles.itemTitle}>{displayValue(item, ['title', 'name', 'show_name'], 'Untitled show')}</Text>
+                <MetaRow label="Theatre" value={displayValue(item, ['theatre_name', 'theatre', 'venue'])} />
                 <View style={styles.metaGrid}>
-                  <MetaRow label="Date" value={valueFor(item, ['show_date', 'date'])} />
-                  <MetaRow label="Time" value={valueFor(item, ['show_time', 'time', 'start_time'])} />
+                  <MetaRow label="Date" value={formatDate(displayValue(item, ['show_date', 'date']))} />
+                  <MetaRow label="Time" value={formatTime(displayValue(item, ['show_time', 'time', 'start_time']))} />
+                  <MetaRow label="Age" value={displayValue(item, ['age_rating', 'rating'])} />
+                  <MetaRow label="Duration" value={displayValue(item, ['duration', 'runtime'])} />
                 </View>
                 {showId ? <Text style={styles.linkText}>View details and showtimes</Text> : null}
               </AppCard>
@@ -177,18 +177,19 @@ export default function ShowsScreen({ navigation }) {
         }}
       />
 
-      <AppButton title="Back to Home" onPress={() => navigation.navigate('Home')} variant="ghost" />
+      <AppButton title="Back to Home" onPress={() => navigation.navigate('Home')} variant="ghost" compact />
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
   filterCard: {
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
   },
   filterActions: {
+    flexDirection: 'row',
     gap: spacing.sm,
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
   },
   theatreFilters: {
     marginTop: spacing.xs,
@@ -200,7 +201,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginRight: spacing.sm,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.xs,
   },
   filterChipActive: {
     backgroundColor: colors.primary,
@@ -227,11 +228,11 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 20,
     fontWeight: '800',
-    marginBottom: spacing.sm,
+    marginBottom: spacing.xs,
   },
   metaGrid: {
-    gap: spacing.md,
-    marginTop: spacing.sm,
+    gap: spacing.xs,
+    marginTop: spacing.xs,
   },
   linkText: {
     color: colors.accentSoft,

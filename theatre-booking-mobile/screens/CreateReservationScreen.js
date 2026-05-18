@@ -7,15 +7,9 @@ import ScreenContainer from '../components/ScreenContainer';
 import { FeedbackMessage } from '../components/StateView';
 import { MetaRow, ScreenHeader } from '../components/TextBits';
 import { spacing } from '../theme';
+import { displayValue, formatDate, formatPrice, formatTime } from '../utils/formatters';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-
-function valueFor(item, keys, fallback = 'Not provided') {
-  const value = keys
-    .map(key => item?.[key])
-    .find(itemValue => itemValue !== undefined && itemValue !== null && itemValue !== '');
-  return value === undefined ? fallback : String(value);
-}
 
 function numberFor(item, keys) {
   const value = keys
@@ -103,29 +97,31 @@ export default function CreateReservationScreen({ route, navigation }) {
   }
 
   return (
-    <ScreenContainer scroll>
+    <ScreenContainer scroll compact>
       <ScreenHeader
         eyebrow="Reserve seats"
         title="Create Reservation"
         subtitle="Confirm your showtime and choose how many seats to reserve."
+        compact
       />
 
-      <AppCard style={styles.section}>
-        <MetaRow label="Show" value={valueFor(showtime, ['title', 'show_title', 'show_name'], valueFor(show, ['title', 'name', 'show_name']))} />
-        <MetaRow label="Date" value={valueFor(showtime, ['show_date', 'date'])} />
-        <MetaRow label="Time" value={valueFor(showtime, ['show_time', 'time', 'start_time'])} />
-        <MetaRow label="Hall" value={valueFor(showtime, ['hall', 'hall_name', 'screen', 'screen_name'])} />
-        <MetaRow label="Price" value={valueFor(showtime, ['price', 'ticket_price'])} />
-        <MetaRow label="Available seats" value={availableSeats === null ? 'Not provided' : String(availableSeats)} />
+      <AppCard compact style={styles.section}>
+        <MetaRow label="Show" value={displayValue(showtime, ['title', 'show_title', 'show_name'], displayValue(show, ['title', 'name', 'show_name']))} />
+        <MetaRow label="Date" value={formatDate(displayValue(showtime, ['show_date', 'date']))} />
+        <MetaRow label="Time" value={formatTime(displayValue(showtime, ['show_time', 'time', 'start_time']))} />
+        <MetaRow label="Hall" value={displayValue(showtime, ['hall', 'hall_name', 'screen', 'screen_name'])} />
+        <MetaRow label="Price" value={formatPrice(displayValue(showtime, ['price', 'ticket_price']))} />
+        <MetaRow label="Available seats" value={availableSeats === null ? null : String(availableSeats)} />
       </AppCard>
 
-      <AppCard style={styles.section}>
+      <AppCard compact style={styles.section}>
         <AppInput
           label="Seats reserved"
           value={seatsReserved}
           onChangeText={setSeatsReserved}
           keyboardType="number-pad"
           placeholder="Seats reserved"
+          compact
         />
         <FeedbackMessage message={error} />
         <FeedbackMessage type="success" message={success} />
@@ -133,8 +129,8 @@ export default function CreateReservationScreen({ route, navigation }) {
       </AppCard>
 
       <View style={styles.actions}>
-        <AppButton title="Back to Show" onPress={() => navigation.goBack()} variant="secondary" />
-        <AppButton title="Home" onPress={() => navigation.navigate('Home')} variant="ghost" />
+        <AppButton title="Back to Show" onPress={() => navigation.goBack()} variant="secondary" compact />
+        <AppButton title="Home" onPress={() => navigation.navigate('Home')} variant="ghost" compact />
       </View>
     </ScreenContainer>
   );
@@ -142,7 +138,7 @@ export default function CreateReservationScreen({ route, navigation }) {
 
 const styles = StyleSheet.create({
   section: {
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
   },
   actions: {
     gap: spacing.sm,

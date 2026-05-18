@@ -42,7 +42,7 @@ export default function RegisterScreen({ navigation }) {
   }
 
   return (
-    <ScreenContainer scroll centered>
+    <ScreenContainer scroll centered contentStyle={styles.content}>
       <ScreenHeader
         eyebrow="Join the audience"
         title="Create your account"
@@ -84,6 +84,9 @@ export default function RegisterScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+  content: {
+    justifyContent: 'center',
+  },
   linkWrapper: {
     marginTop: spacing.lg,
     padding: spacing.sm,

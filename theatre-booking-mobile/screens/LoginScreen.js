@@ -41,9 +41,15 @@ export default function LoginScreen({ navigation }) {
   }
 
   return (
-    <ScreenContainer scroll centered>
-      <View style={styles.brandMark}>
-        <Text style={styles.brandMarkText}>TB</Text>
+    <ScreenContainer scroll centered contentStyle={styles.content}>
+      <View style={styles.brandRow}>
+        <View style={styles.brandMark}>
+          <Text style={styles.brandMarkText}>TB</Text>
+        </View>
+        <View>
+          <Text style={styles.brandName}>Theatre Booking</Text>
+          <Text style={styles.brandTagline}>Reserve the best seats</Text>
+        </View>
       </View>
       <ScreenHeader
         eyebrow="Curtain call"
@@ -88,13 +94,30 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     height: 58,
     justifyContent: 'center',
-    marginBottom: spacing.lg,
     width: 58,
+  },
+  brandRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginBottom: spacing.lg,
   },
   brandMarkText: {
     color: colors.white,
     fontSize: 18,
     fontWeight: '900',
+  },
+  brandName: {
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: '900',
+  },
+  brandTagline: {
+    color: colors.textMuted,
+    marginTop: spacing.xs,
+  },
+  content: {
+    justifyContent: 'center',
   },
   linkWrapper: {
     marginTop: spacing.lg,

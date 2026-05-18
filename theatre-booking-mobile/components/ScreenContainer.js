@@ -1,10 +1,13 @@
 import React from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
+import { Platform, SafeAreaView, ScrollView, StatusBar, StyleSheet, View } from 'react-native';
 import { colors, spacing } from '../theme';
 
-export default function ScreenContainer({ children, scroll = false, centered = false, style, contentStyle }) {
+const androidTopInset = Platform.OS === 'android' ? StatusBar.currentHeight ?? 0 : 0;
+
+export default function ScreenContainer({ children, scroll = false, centered = false, compact = false, style, contentStyle }) {
   const content = [
     styles.content,
+    compact && styles.compact,
     centered && styles.centered,
     contentStyle,
   ];
@@ -28,14 +31,18 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: colors.background,
+    paddingTop: androidTopInset,
   },
   fill: {
     flex: 1,
   },
   content: {
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.xl,
-    paddingBottom: spacing.xl,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.xxl,
+  },
+  compact: {
+    paddingTop: spacing.md,
   },
   centered: {
     flexGrow: 1,

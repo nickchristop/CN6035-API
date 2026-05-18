@@ -4,9 +4,10 @@ import AppButton from '../components/AppButton';
 import AppCard from '../components/AppCard';
 import AppInput from '../components/AppInput';
 import ScreenContainer from '../components/ScreenContainer';
-import { EmptyState, ErrorState, FeedbackMessage, LoadingState } from '../components/StateView';
+import { EmptyState, FeedbackMessage, LoadingState } from '../components/StateView';
 import { MetaRow, Pill, ScreenHeader } from '../components/TextBits';
 import { colors, spacing } from '../theme';
+import { displayValue, formatDate, formatTime } from '../utils/formatters';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 
@@ -17,19 +18,12 @@ function asList(data) {
   return [];
 }
 
-function valueFor(item, keys, fallback = 'Not provided') {
-  const value = keys
-    .map(key => item?.[key])
-    .find(itemValue => itemValue !== undefined && itemValue !== null && itemValue !== '');
-  return value === undefined ? fallback : String(value);
-}
-
 function reservationIdFor(item) {
   return item?.reservation_id ?? item?.id;
 }
 
 function statusFor(item) {
-  return valueFor(item, ['status', 'reservation_status'], 'Confirmed');
+  return displayValue(item, ['status', 'reservation_status'], 'Confirmed');
 }
 
 function isActiveReservation(item) {
@@ -39,6 +33,15 @@ function isActiveReservation(item) {
   if (status.includes('complete')) return false;
 
   return ['active', 'confirmed', 'pending', 'booked'].some(activeStatus => status.includes(activeStatus));
+}
+
+function statusTone(item) {
+  const status = statusFor(item).toLowerCase();
+
+  if (status.includes('cancel')) return 'danger';
+  if (isActiveReservation(item)) return 'success';
+
+  return 'muted';
 }
 
 export default function ReservationsScreen({ navigation }) {
@@ -122,7 +125,7 @@ export default function ReservationsScreen({ navigation }) {
     setError('');
     setSuccess('');
     setEditingReservationId(reservationId);
-    setEditSeatsReserved(valueFor(item, ['seats_reserved', 'seats', 'quantity'], ''));
+    setEditSeatsReserved(displayValue(item, ['seats_reserved', 'seats', 'quantity'], ''));
   }
 
   function validateEditSeats() {
@@ -189,14 +192,15 @@ export default function ReservationsScreen({ navigation }) {
   }
 
   return (
-    <ScreenContainer>
+    <ScreenContainer compact>
       <ScreenHeader
         eyebrow="Your tickets"
         title="My Reservations"
         subtitle="Review bookings, edit seat counts, or cancel active reservations."
+        compact
       />
 
-      {error ? <ErrorState message={error} onRetry={loadReservations} /> : null}
+      <FeedbackMessage message={error} />
       <FeedbackMessage type="success" message={success} />
 
       <FlatList
@@ -213,16 +217,19 @@ export default function ReservationsScreen({ navigation }) {
           const active = isActiveReservation(item);
 
           return (
-            <AppCard style={styles.card}>
+            <AppCard compact muted={!active} style={[styles.card, active ? styles.activeCard : styles.inactiveCard]}>
               <View style={styles.cardHeader}>
-                <Text style={styles.cardTitle}>{valueFor(item, ['show_title', 'title', 'show_name'], 'Untitled show')}</Text>
-                <Pill tone={active ? 'accent' : 'danger'}>{statusFor(item)}</Pill>
+                <View style={styles.ticketTitleBlock}>
+                  <Text style={styles.ticketLabel}>Booking</Text>
+                  <Text style={styles.cardTitle}>{displayValue(item, ['show_title', 'title', 'show_name'], 'Untitled show')}</Text>
+                </View>
+                <Pill tone={statusTone(item)}>{statusFor(item)}</Pill>
               </View>
-              <MetaRow label="Theatre" value={valueFor(item, ['theatre_name', 'theatre', 'venue'])} />
+              <MetaRow label="Theatre" value={displayValue(item, ['theatre_name', 'theatre', 'venue'])} />
               <View style={styles.metaGrid}>
-                <MetaRow label="Date" value={valueFor(item, ['show_date', 'date'])} />
-                <MetaRow label="Time" value={valueFor(item, ['show_time', 'time', 'start_time'])} />
-                <MetaRow label="Seats" value={valueFor(item, ['seats_reserved', 'seats', 'quantity'])} />
+                <MetaRow label="Date" value={formatDate(displayValue(item, ['show_date', 'date']))} />
+                <MetaRow label="Time" value={formatTime(displayValue(item, ['show_time', 'time', 'start_time']))} />
+                <MetaRow label="Seats" value={displayValue(item, ['seats_reserved', 'seats', 'quantity'])} />
               </View>
               {active ? (
                 <View style={styles.cardActions}>
@@ -235,6 +242,7 @@ export default function ReservationsScreen({ navigation }) {
                         keyboardType="number-pad"
                         placeholder="Seats reserved"
                         editable={!isUpdating}
+                        compact
                       />
                       {isUpdating ? (
                         <AppButton title="Updating..." loading disabled />
@@ -244,12 +252,14 @@ export default function ReservationsScreen({ navigation }) {
                             title="Save"
                             onPress={() => updateReservation(reservationId)}
                             disabled={hasBusyAction}
+                            compact
                           />
                           <AppButton
                             title="Cancel Edit"
                             onPress={cancelEditingReservation}
                             disabled={hasBusyAction}
                             variant="secondary"
+                            compact
                           />
                         </View>
                       )}
@@ -261,15 +271,17 @@ export default function ReservationsScreen({ navigation }) {
                         onPress={() => startEditingReservation(item)}
                         disabled={hasBusyAction}
                         variant="secondary"
+                        compact
                       />
                       {isCanceling ? (
-                        <AppButton title="Cancelling..." loading disabled variant="danger" />
+                        <AppButton title="Cancelling..." loading disabled variant="danger" compact />
                       ) : (
                         <AppButton
                           title="Cancel Reservation"
                           onPress={() => confirmCancelReservation(item)}
                           disabled={hasBusyAction}
                           variant="danger"
+                          compact
                         />
                       )}
                     </>
@@ -281,7 +293,10 @@ export default function ReservationsScreen({ navigation }) {
         }}
       />
 
-      <AppButton title="Back to Home" onPress={() => navigation.navigate('Home')} variant="ghost" />
+      <View style={styles.footerActions}>
+        <AppButton title="Refresh" onPress={() => loadReservations()} variant="secondary" compact />
+        <AppButton title="Back to Home" onPress={() => navigation.navigate('Home')} variant="ghost" compact />
+      </View>
     </ScreenContainer>
   );
 }
@@ -292,10 +307,31 @@ const styles = StyleSheet.create({
   },
   card: {
     marginBottom: spacing.md,
+    borderLeftWidth: 4,
+  },
+  activeCard: {
+    borderLeftColor: colors.accent,
+  },
+  inactiveCard: {
+    borderLeftColor: colors.borderSoft,
   },
   cardHeader: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
     gap: spacing.sm,
+    justifyContent: 'space-between',
     marginBottom: spacing.sm,
+  },
+  ticketTitleBlock: {
+    flex: 1,
+  },
+  ticketLabel: {
+    color: colors.accent,
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0,
+    marginBottom: spacing.xs,
+    textTransform: 'uppercase',
   },
   cardTitle: {
     color: colors.text,
@@ -303,7 +339,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   metaGrid: {
-    gap: spacing.md,
+    gap: spacing.xs,
     marginTop: spacing.sm,
   },
   cardActions: {
@@ -311,6 +347,9 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
   },
   editActions: {
+    gap: spacing.sm,
+  },
+  footerActions: {
     gap: spacing.sm,
   },
 });
