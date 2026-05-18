@@ -56,3 +56,12 @@ export function formatPrice(value) {
     currency: 'EUR',
   }).format(numberValue);
 }
+
+export function formatDuration(value) {
+  if (value === undefined || value === null || value === '') return null;
+
+  const durationText = String(value).trim();
+  if (!durationText) return null;
+
+  return /\bmin\b/i.test(durationText) ? durationText : `${durationText} min`;
+}

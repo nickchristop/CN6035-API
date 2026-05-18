@@ -8,7 +8,7 @@ import { EmptyState, ErrorState, LoadingState } from '../components/StateView';
 import { MetaRow, ScreenHeader } from '../components/TextBits';
 import { MetadataChip } from '../components/VisualCards';
 import { colors, radius, spacing } from '../theme';
-import { displayValue, formatDate, formatTime } from '../utils/formatters';
+import { displayValue, formatDate, formatDuration, formatTime } from '../utils/formatters';
 import api from '../services/api';
 
 function asList(data) {
@@ -172,7 +172,7 @@ export default function ShowsScreen({ navigation }) {
                   <MetadataChip label="Date" value={formatDate(displayValue(item, ['show_date', 'date']))} tone="accent" />
                   <MetadataChip label="Time" value={formatTime(displayValue(item, ['show_time', 'time', 'start_time']))} />
                   <MetadataChip label="Age" value={displayValue(item, ['age_rating', 'rating'])} />
-                  <MetadataChip label="Duration" value={displayValue(item, ['duration', 'runtime'])} />
+                  <MetadataChip label="Duration" value={formatDuration(displayValue(item, ['duration', 'runtime']))} />
                 </View>
                 <MetaRow label="About" value={displayValue(item, ['description', 'summary'])} />
                 {showId ? <Text style={styles.linkText}>View details and showtimes</Text> : null}

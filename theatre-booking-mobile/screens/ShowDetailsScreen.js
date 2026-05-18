@@ -7,7 +7,7 @@ import { ErrorState, LoadingState } from '../components/StateView';
 import { MetaRow, ScreenHeader, SectionTitle } from '../components/TextBits';
 import { MetadataChip } from '../components/VisualCards';
 import { colors, spacing } from '../theme';
-import { displayValue, formatDate, formatPrice, formatTime } from '../utils/formatters';
+import { displayValue, formatDate, formatDuration, formatPrice, formatTime } from '../utils/formatters';
 import api from '../services/api';
 
 function firstShow(data) {
@@ -95,7 +95,7 @@ export default function ShowDetailsScreen({ route, navigation }) {
               <MetadataChip label="Date" value={formatDate(displayValue(show, ['show_date', 'date']))} tone="accent" />
               <MetadataChip label="Time" value={formatTime(displayValue(show, ['show_time', 'time', 'start_time']))} />
               <MetadataChip label="Age" value={displayValue(show, ['age_rating', 'rating'])} />
-              <MetadataChip label="Duration" value={displayValue(show, ['duration', 'runtime'])} />
+              <MetadataChip label="Duration" value={formatDuration(displayValue(show, ['duration', 'runtime']))} />
             </View>
             <MetaRow label="Description" value={displayValue(show, ['description', 'summary'])} />
           </AppCard>
