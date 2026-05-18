@@ -4,9 +4,9 @@
 USE theater_booking_db;
 
 INSERT INTO theatres (name, location) VALUES
-  ('Grand Theatre',       'City Centre, Athens'),
+  ('Alsos Theatre',       'Athens - Address: Evelpidon 4'),
   ('Apollo Stage',        'Thessaloniki Old Town'),
-  ('Odeon Amphitheatre',  'Piraeus, Athens');
+  ('Municipal Theater of Piraeus', 'Piraeus - Address: Iroon Polytechneiou 32');
 
 INSERT INTO shows (title, description, duration, age_rating, theatre_id) VALUES
   ('Hamlet',        'Shakespeare''s classic tragedy of revenge and madness.', 180, '15+', 1),
