@@ -1,8 +1,7 @@
 import React from 'react';
-import { Platform, SafeAreaView, ScrollView, StatusBar, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing } from '../theme';
-
-const androidTopInset = Platform.OS === 'android' ? StatusBar.currentHeight ?? 0 : 0;
 
 export default function ScreenContainer({ children, scroll = false, centered = false, compact = false, style, contentStyle }) {
   const content = [
@@ -13,7 +12,7 @@ export default function ScreenContainer({ children, scroll = false, centered = f
   ];
 
   return (
-    <SafeAreaView style={[styles.safe, style]}>
+    <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={[styles.safe, style]}>
       {scroll ? (
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={content}>
           {children}
@@ -31,18 +30,17 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: colors.background,
-    paddingTop: androidTopInset,
   },
   fill: {
     flex: 1,
   },
   content: {
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.xxl,
+    paddingTop: spacing.xxl,
+    paddingBottom: spacing.xxl + spacing.lg,
   },
   compact: {
-    paddingTop: spacing.md,
+    paddingTop: spacing.xl,
   },
   centered: {
     flexGrow: 1,

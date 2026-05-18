@@ -6,6 +6,7 @@ import AppInput from '../components/AppInput';
 import ScreenContainer from '../components/ScreenContainer';
 import { EmptyState, ErrorState, LoadingState } from '../components/StateView';
 import { MetaRow, ScreenHeader, Pill } from '../components/TextBits';
+import { MetadataChip } from '../components/VisualCards';
 import { colors, spacing } from '../theme';
 import { displayValue } from '../utils/formatters';
 import api from '../services/api';
@@ -84,7 +85,7 @@ export default function TheatresScreen({ navigation }) {
         compact
       />
 
-      <AppCard compact style={styles.filterCard}>
+      <AppCard compact accent="top" style={styles.filterCard}>
         <AppInput
           label="Search"
           placeholder="Search theatre or location"
@@ -108,14 +109,16 @@ export default function TheatresScreen({ navigation }) {
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={!error ? <EmptyState message="No theatres found." /> : null}
         renderItem={({ item }) => (
-          <AppCard compact style={styles.item}>
+          <AppCard compact accent="left" style={styles.item}>
             <View style={styles.cardHeader}>
               <Text style={styles.itemTitle}>{displayValue(item, ['name', 'theatre_name'], 'Untitled theatre')}</Text>
               <Pill tone="accent">Venue</Pill>
             </View>
+            <View style={styles.chipRow}>
+              <MetadataChip label="Location" value={displayValue(item, ['location', 'address', 'city'])} tone="accent" />
+              <MetadataChip label="Capacity" value={displayValue(item, ['capacity', 'total_seats'])} />
+            </View>
             <View style={styles.metaGrid}>
-              <MetaRow label="Location" value={displayValue(item, ['location', 'address', 'city'])} />
-              <MetaRow label="Capacity" value={displayValue(item, ['capacity', 'total_seats'])} />
               <MetaRow label="Description" value={displayValue(item, ['description', 'details'])} />
             </View>
           </AppCard>
@@ -129,7 +132,7 @@ export default function TheatresScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   filterCard: {
-    marginBottom: spacing.md,
+    marginBottom: spacing.lg,
   },
   filterActions: {
     flexDirection: 'row',
@@ -140,6 +143,7 @@ const styles = StyleSheet.create({
   },
   item: {
     marginBottom: spacing.md,
+    minHeight: 118,
   },
   cardHeader: {
     alignItems: 'center',
@@ -156,5 +160,11 @@ const styles = StyleSheet.create({
   },
   metaGrid: {
     gap: spacing.xs,
+  },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
   },
 });

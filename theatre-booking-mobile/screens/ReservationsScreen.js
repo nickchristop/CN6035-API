@@ -5,7 +5,8 @@ import AppCard from '../components/AppCard';
 import AppInput from '../components/AppInput';
 import ScreenContainer from '../components/ScreenContainer';
 import { EmptyState, FeedbackMessage, LoadingState } from '../components/StateView';
-import { MetaRow, Pill, ScreenHeader } from '../components/TextBits';
+import { Pill, ScreenHeader } from '../components/TextBits';
+import { MetadataChip, TicketDivider } from '../components/VisualCards';
 import { colors, spacing } from '../theme';
 import { displayValue, formatDate, formatTime } from '../utils/formatters';
 import { useAuth } from '../context/AuthContext';
@@ -217,42 +218,45 @@ export default function ReservationsScreen({ navigation }) {
           const active = isActiveReservation(item);
 
           return (
-            <AppCard compact muted={!active} style={[styles.card, active ? styles.activeCard : styles.inactiveCard]}>
-              <View style={styles.cardHeader}>
+            <AppCard compact muted={!active} accent={active ? 'top' : null} style={[styles.card, active ? styles.activeCard : styles.inactiveCard]}>
+              <View style={styles.ticketHeader}>
                 <View style={styles.ticketTitleBlock}>
                   <Text style={styles.ticketLabel}>Booking</Text>
                   <Text style={styles.cardTitle}>{displayValue(item, ['show_title', 'title', 'show_name'], 'Untitled show')}</Text>
                 </View>
                 <Pill tone={statusTone(item)}>{statusFor(item)}</Pill>
               </View>
-              <MetaRow label="Theatre" value={displayValue(item, ['theatre_name', 'theatre', 'venue'])} />
-              <View style={styles.metaGrid}>
-                <MetaRow label="Date" value={formatDate(displayValue(item, ['show_date', 'date']))} />
-                <MetaRow label="Time" value={formatTime(displayValue(item, ['show_time', 'time', 'start_time']))} />
-                <MetaRow label="Seats" value={displayValue(item, ['seats_reserved', 'seats', 'quantity'])} />
+              <Text style={styles.theatreText}>{displayValue(item, ['theatre_name', 'theatre', 'venue'], 'Theatre TBC')}</Text>
+              <View style={styles.ticketChips}>
+                <MetadataChip label="Date" value={formatDate(displayValue(item, ['show_date', 'date']))} tone="accent" />
+                <MetadataChip label="Time" value={formatTime(displayValue(item, ['show_time', 'time', 'start_time']))} />
+                <MetadataChip label="Seats" value={displayValue(item, ['seats_reserved', 'seats', 'quantity'])} />
               </View>
               {active ? (
-                <View style={styles.cardActions}>
-                  {isEditing ? (
-                    <>
-                      <AppInput
-                        label="Seats reserved"
-                        value={editSeatsReserved}
-                        onChangeText={setEditSeatsReserved}
-                        keyboardType="number-pad"
-                        placeholder="Seats reserved"
-                        editable={!isUpdating}
-                        compact
-                      />
-                      {isUpdating ? (
-                        <AppButton title="Updating..." loading disabled />
-                      ) : (
-                        <View style={styles.editActions}>
-                          <AppButton
+                <>
+                  <TicketDivider />
+                  <View style={styles.cardActions}>
+                    {isEditing ? (
+                      <>
+                        <AppInput
+                          label="Seats reserved"
+                          value={editSeatsReserved}
+                          onChangeText={setEditSeatsReserved}
+                          keyboardType="number-pad"
+                          placeholder="Seats reserved"
+                          editable={!isUpdating}
+                          compact
+                        />
+                        {isUpdating ? (
+                          <AppButton title="Updating..." loading disabled />
+                        ) : (
+                          <View style={styles.editActions}>
+                            <AppButton
                             title="Save"
                             onPress={() => updateReservation(reservationId)}
                             disabled={hasBusyAction}
                             compact
+                            style={styles.actionButton}
                           />
                           <AppButton
                             title="Cancel Edit"
@@ -260,33 +264,37 @@ export default function ReservationsScreen({ navigation }) {
                             disabled={hasBusyAction}
                             variant="secondary"
                             compact
+                            style={styles.actionButton}
                           />
-                        </View>
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      <AppButton
-                        title="Edit Seats"
-                        onPress={() => startEditingReservation(item)}
-                        disabled={hasBusyAction}
-                        variant="secondary"
-                        compact
-                      />
-                      {isCanceling ? (
-                        <AppButton title="Cancelling..." loading disabled variant="danger" compact />
-                      ) : (
+                          </View>
+                        )}
+                      </>
+                    ) : (
+                      <View style={styles.actionRow}>
                         <AppButton
-                          title="Cancel Reservation"
-                          onPress={() => confirmCancelReservation(item)}
+                          title="Edit Seats"
+                          onPress={() => startEditingReservation(item)}
                           disabled={hasBusyAction}
-                          variant="danger"
+                          variant="secondary"
                           compact
+                          style={styles.actionButton}
                         />
-                      )}
-                    </>
-                  )}
-                </View>
+                        {isCanceling ? (
+                          <AppButton title="Cancelling..." loading disabled variant="danger" compact />
+                        ) : (
+                          <AppButton
+                            title="Cancel Reservation"
+                            onPress={() => confirmCancelReservation(item)}
+                            disabled={hasBusyAction}
+                            variant="danger"
+                            compact
+                            style={styles.actionButton}
+                          />
+                        )}
+                      </View>
+                    )}
+                  </View>
+                </>
               ) : null}
             </AppCard>
           );
@@ -307,15 +315,14 @@ const styles = StyleSheet.create({
   },
   card: {
     marginBottom: spacing.md,
-    borderLeftWidth: 4,
   },
   activeCard: {
-    borderLeftColor: colors.accent,
+    borderColor: '#61454f',
   },
   inactiveCard: {
-    borderLeftColor: colors.borderSoft,
+    borderStyle: 'dashed',
   },
-  cardHeader: {
+  ticketHeader: {
     alignItems: 'flex-start',
     flexDirection: 'row',
     gap: spacing.sm,
@@ -335,19 +342,35 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     color: colors.text,
-    fontSize: 20,
-    fontWeight: '800',
+    fontSize: 21,
+    fontWeight: '900',
+    lineHeight: 26,
   },
-  metaGrid: {
-    gap: spacing.xs,
+  theatreText: {
+    color: colors.textMuted,
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: spacing.md,
+  },
+  ticketChips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
     marginTop: spacing.sm,
   },
   cardActions: {
     gap: spacing.sm,
-    marginTop: spacing.lg,
+  },
+  actionRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
   },
   editActions: {
+    flexDirection: 'row',
     gap: spacing.sm,
+  },
+  actionButton: {
+    flex: 1,
   },
   footerActions: {
     gap: spacing.sm,

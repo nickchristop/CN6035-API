@@ -56,7 +56,7 @@ export default function LoginScreen({ navigation }) {
         title="Welcome back"
         subtitle="Sign in to browse shows, reserve seats, and manage your bookings."
       />
-      <AppCard>
+      <AppCard accent="top">
         <AppInput
           label="Email"
           placeholder="you@example.com"

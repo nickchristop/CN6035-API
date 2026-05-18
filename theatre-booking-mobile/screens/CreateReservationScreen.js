@@ -6,7 +6,8 @@ import AppInput from '../components/AppInput';
 import ScreenContainer from '../components/ScreenContainer';
 import { FeedbackMessage } from '../components/StateView';
 import { MetaRow, ScreenHeader } from '../components/TextBits';
-import { spacing } from '../theme';
+import { MetadataChip, TicketDivider } from '../components/VisualCards';
+import { colors, spacing } from '../theme';
 import { displayValue, formatDate, formatPrice, formatTime } from '../utils/formatters';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
@@ -105,16 +106,19 @@ export default function CreateReservationScreen({ route, navigation }) {
         compact
       />
 
-      <AppCard compact style={styles.section}>
+      <AppCard compact accent="top" style={styles.ticketSummary}>
         <MetaRow label="Show" value={displayValue(showtime, ['title', 'show_title', 'show_name'], displayValue(show, ['title', 'name', 'show_name']))} />
-        <MetaRow label="Date" value={formatDate(displayValue(showtime, ['show_date', 'date']))} />
-        <MetaRow label="Time" value={formatTime(displayValue(showtime, ['show_time', 'time', 'start_time']))} />
-        <MetaRow label="Hall" value={displayValue(showtime, ['hall', 'hall_name', 'screen', 'screen_name'])} />
-        <MetaRow label="Price" value={formatPrice(displayValue(showtime, ['price', 'ticket_price']))} />
-        <MetaRow label="Available seats" value={availableSeats === null ? null : String(availableSeats)} />
+        <TicketDivider />
+        <View style={styles.chipRow}>
+          <MetadataChip label="Date" value={formatDate(displayValue(showtime, ['show_date', 'date']))} tone="accent" />
+          <MetadataChip label="Time" value={formatTime(displayValue(showtime, ['show_time', 'time', 'start_time']))} />
+          <MetadataChip label="Hall" value={displayValue(showtime, ['hall', 'hall_name', 'screen', 'screen_name'])} />
+          <MetadataChip label="Price" value={formatPrice(displayValue(showtime, ['price', 'ticket_price']))} />
+          <MetadataChip label="Available" value={availableSeats === null ? null : String(availableSeats)} />
+        </View>
       </AppCard>
 
-      <AppCard compact style={styles.section}>
+      <AppCard compact accent="left" style={styles.section}>
         <AppInput
           label="Seats reserved"
           value={seatsReserved}
@@ -125,7 +129,7 @@ export default function CreateReservationScreen({ route, navigation }) {
         />
         <FeedbackMessage message={error} />
         <FeedbackMessage type="success" message={success} />
-        <AppButton title="Create Reservation" onPress={handleCreateReservation} loading={loading} />
+        <AppButton title="Create Reservation" onPress={handleCreateReservation} loading={loading} style={styles.submitButton} />
       </AppCard>
 
       <View style={styles.actions}>
@@ -139,6 +143,17 @@ export default function CreateReservationScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   section: {
     marginBottom: spacing.md,
+  },
+  ticketSummary: {
+    marginBottom: spacing.lg,
+  },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  submitButton: {
+    borderColor: colors.accent,
   },
   actions: {
     gap: spacing.sm,

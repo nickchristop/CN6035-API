@@ -48,7 +48,7 @@ export default function RegisterScreen({ navigation }) {
         title="Create your account"
         subtitle="Register once, then reserve seats and track every booking from your phone."
       />
-      <AppCard>
+      <AppCard accent="top">
         <AppInput
           label="Name"
           placeholder="Full name"

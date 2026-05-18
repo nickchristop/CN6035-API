@@ -1,9 +1,10 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import AppButton from '../components/AppButton';
 import AppCard from '../components/AppCard';
 import ScreenContainer from '../components/ScreenContainer';
 import { ScreenHeader } from '../components/TextBits';
+import { DashboardCard } from '../components/VisualCards';
 import { colors, spacing } from '../theme';
 import { useAuth } from '../context/AuthContext';
 
@@ -12,7 +13,7 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <ScreenContainer scroll>
-      <AppCard compact style={styles.hero}>
+      <AppCard compact accent="top" style={styles.hero}>
         <Text style={styles.heroEyebrow}>Theatre Booking</Text>
         <Text style={styles.heroTitle}>Find your next night out</Text>
         <Text style={styles.heroCopy}>
@@ -28,19 +29,22 @@ export default function HomeScreen({ navigation }) {
       />
 
       <View style={styles.actions}>
-        <DashboardAction
+        <DashboardCard
+          marker="V"
           eyebrow="Venues"
           title="Browse Theatres"
           body="Compare venues and capacities."
           onPress={() => navigation.navigate('Theatres')}
         />
-        <DashboardAction
+        <DashboardCard
+          marker="S"
           eyebrow="Now playing"
           title="Browse Shows"
           body="Find performances and showtimes."
           onPress={() => navigation.navigate('Shows')}
         />
-        <DashboardAction
+        <DashboardCard
+          marker="T"
           eyebrow="Your tickets"
           title="My Reservations"
           body="Edit seats or cancel bookings."
@@ -50,21 +54,6 @@ export default function HomeScreen({ navigation }) {
 
       <AppButton title="Logout" onPress={logout} variant="ghost" compact />
     </ScreenContainer>
-  );
-}
-
-function DashboardAction({ eyebrow, title, body, onPress }) {
-  return (
-    <Pressable onPress={onPress} style={({ pressed }) => [pressed && styles.actionPressed]}>
-      <AppCard compact style={styles.actionCard}>
-        <View style={styles.actionText}>
-          <Text style={styles.actionEyebrow}>{eyebrow}</Text>
-          <Text style={styles.actionTitle}>{title}</Text>
-          <Text style={styles.actionBody}>{body}</Text>
-        </View>
-        <Text style={styles.actionArrow}>›</Text>
-      </AppCard>
-    </Pressable>
   );
 }
 
@@ -96,40 +85,5 @@ const styles = StyleSheet.create({
   actions: {
     gap: spacing.sm,
     marginBottom: spacing.lg,
-  },
-  actionCard: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: spacing.md,
-    justifyContent: 'space-between',
-  },
-  actionPressed: {
-    opacity: 0.86,
-  },
-  actionText: {
-    flex: 1,
-  },
-  actionEyebrow: {
-    color: colors.accent,
-    fontSize: 11,
-    fontWeight: '800',
-    letterSpacing: 0,
-    marginBottom: spacing.xs,
-    textTransform: 'uppercase',
-  },
-  actionTitle: {
-    color: colors.text,
-    fontSize: 17,
-    fontWeight: '800',
-  },
-  actionBody: {
-    color: colors.textMuted,
-    lineHeight: 20,
-    marginTop: spacing.xs,
-  },
-  actionArrow: {
-    color: colors.accentSoft,
-    fontSize: 30,
-    fontWeight: '300',
   },
 });

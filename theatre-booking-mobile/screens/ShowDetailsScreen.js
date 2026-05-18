@@ -5,6 +5,7 @@ import AppCard from '../components/AppCard';
 import ScreenContainer from '../components/ScreenContainer';
 import { ErrorState, LoadingState } from '../components/StateView';
 import { MetaRow, ScreenHeader, SectionTitle } from '../components/TextBits';
+import { MetadataChip } from '../components/VisualCards';
 import { colors, spacing } from '../theme';
 import { displayValue, formatDate, formatPrice, formatTime } from '../utils/formatters';
 import api from '../services/api';
@@ -87,12 +88,15 @@ export default function ShowDetailsScreen({ route, navigation }) {
         <ErrorState message={error} onRetry={loadShowDetails} />
       ) : (
         <>
-          <AppCard compact style={styles.section}>
-            <MetaRow label="Theatre" value={displayValue(show, ['theatre_name', 'theatre', 'venue'])} />
-            <MetaRow label="Date" value={formatDate(displayValue(show, ['show_date', 'date']))} />
-            <MetaRow label="Time" value={formatTime(displayValue(show, ['show_time', 'time', 'start_time']))} />
-            <MetaRow label="Age rating" value={displayValue(show, ['age_rating', 'rating'])} />
-            <MetaRow label="Duration" value={displayValue(show, ['duration', 'runtime'])} />
+          <AppCard compact accent="top" style={styles.heroCard}>
+            <Text style={styles.heroTitle}>{displayValue(show, ['title', 'name', 'show_name'], 'Show details')}</Text>
+            <Text style={styles.heroVenue}>{displayValue(show, ['theatre_name', 'theatre', 'venue'], 'Theatre TBC')}</Text>
+            <View style={styles.chipRow}>
+              <MetadataChip label="Date" value={formatDate(displayValue(show, ['show_date', 'date']))} tone="accent" />
+              <MetadataChip label="Time" value={formatTime(displayValue(show, ['show_time', 'time', 'start_time']))} />
+              <MetadataChip label="Age" value={displayValue(show, ['age_rating', 'rating'])} />
+              <MetadataChip label="Duration" value={displayValue(show, ['duration', 'runtime'])} />
+            </View>
             <MetaRow label="Description" value={displayValue(show, ['description', 'summary'])} />
           </AppCard>
 
@@ -102,18 +106,21 @@ export default function ShowDetailsScreen({ route, navigation }) {
               showtimes.map((showtime, index) => (
                 <Pressable
                   key={String(showtimeIdFor(showtime) ?? index)}
-                  style={({ pressed }) => [styles.showtimeItem, pressed && styles.showtimePressed]}
+                  style={({ pressed }) => [styles.showtimeCard, pressed && styles.showtimePressed]}
                   onPress={() => navigation.navigate('CreateReservation', { show, showtime })}
                 >
                   <View style={styles.showtimeHeader}>
-                    <Text style={styles.showtimeTime}>{formatTime(displayValue(showtime, ['show_time', 'time', 'start_time'])) ?? 'Time TBC'}</Text>
-                    <Text style={styles.reserveText}>Reserve seats</Text>
+                    <View>
+                      <Text style={styles.showtimeLabel}>Performance</Text>
+                      <Text style={styles.showtimeTime}>{formatTime(displayValue(showtime, ['show_time', 'time', 'start_time'])) ?? 'Time TBC'}</Text>
+                    </View>
+                    <Text style={styles.reserveText}>Reserve</Text>
                   </View>
                   <View style={styles.showtimeMeta}>
-                    <MetaRow label="Date" value={formatDate(displayValue(showtime, ['show_date', 'date']))} />
-                    <MetaRow label="Hall" value={displayValue(showtime, ['hall', 'hall_name', 'screen', 'screen_name'])} />
-                    <MetaRow label="Price" value={formatPrice(displayValue(showtime, ['price', 'ticket_price']))} />
-                    <MetaRow label="Available seats" value={displayValue(showtime, ['available_seats', 'seats_available', 'remaining_seats'])} />
+                    <MetadataChip label="Date" value={formatDate(displayValue(showtime, ['show_date', 'date']))} tone="accent" />
+                    <MetadataChip label="Hall" value={displayValue(showtime, ['hall', 'hall_name', 'screen', 'screen_name'])} />
+                    <MetadataChip label="Price" value={formatPrice(displayValue(showtime, ['price', 'ticket_price']))} />
+                    <MetadataChip label="Seats" value={displayValue(showtime, ['available_seats', 'seats_available', 'remaining_seats'])} />
                   </View>
                 </Pressable>
               ))
@@ -133,13 +140,31 @@ export default function ShowDetailsScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
+  heroCard: {
+    marginBottom: spacing.lg,
+  },
+  heroTitle: {
+    color: colors.text,
+    fontSize: 25,
+    fontWeight: '900',
+    lineHeight: 31,
+  },
+  heroVenue: {
+    color: colors.textMuted,
+    fontSize: 15,
+    fontWeight: '700',
+    marginTop: spacing.xs,
+  },
   section: {
     marginBottom: spacing.md,
   },
-  showtimeItem: {
-    borderTopColor: colors.border,
-    borderTopWidth: 1,
-    paddingVertical: spacing.sm,
+  showtimeCard: {
+    backgroundColor: colors.backgroundAlt,
+    borderColor: colors.borderSoft,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginTop: spacing.sm,
+    padding: spacing.md,
   },
   showtimePressed: {
     backgroundColor: colors.surfaceRaised,
@@ -153,15 +178,31 @@ const styles = StyleSheet.create({
   },
   showtimeTime: {
     color: colors.text,
-    fontSize: 18,
+    fontSize: 22,
+    fontWeight: '900',
+  },
+  showtimeLabel: {
+    color: colors.accent,
+    fontSize: 11,
     fontWeight: '800',
+    letterSpacing: 0,
+    marginBottom: spacing.xs,
+    textTransform: 'uppercase',
   },
   reserveText: {
     color: colors.accentSoft,
     fontWeight: '800',
   },
   showtimeMeta: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: spacing.xs,
+  },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginVertical: spacing.md,
   },
   empty: {
     color: colors.textMuted,

@@ -6,6 +6,7 @@ import AppInput from '../components/AppInput';
 import ScreenContainer from '../components/ScreenContainer';
 import { EmptyState, ErrorState, LoadingState } from '../components/StateView';
 import { MetaRow, ScreenHeader } from '../components/TextBits';
+import { MetadataChip } from '../components/VisualCards';
 import { colors, radius, spacing } from '../theme';
 import { displayValue, formatDate, formatTime } from '../utils/formatters';
 import api from '../services/api';
@@ -103,7 +104,7 @@ export default function ShowsScreen({ navigation }) {
         compact
       />
 
-      <AppCard compact style={styles.filterCard}>
+      <AppCard compact accent="top" style={styles.filterCard}>
         <AppInput
           label="Show title"
           placeholder="Search show title"
@@ -161,15 +162,16 @@ export default function ShowsScreen({ navigation }) {
               onPress={() => navigation.navigate('ShowDetails', { showId })}
               style={({ pressed }) => [pressed && styles.cardPressed]}
             >
-              <AppCard compact style={styles.item}>
+              <AppCard compact accent="left" style={styles.item}>
                 <Text style={styles.itemTitle}>{displayValue(item, ['title', 'name', 'show_name'], 'Untitled show')}</Text>
-                <MetaRow label="Theatre" value={displayValue(item, ['theatre_name', 'theatre', 'venue'])} />
-                <View style={styles.metaGrid}>
-                  <MetaRow label="Date" value={formatDate(displayValue(item, ['show_date', 'date']))} />
-                  <MetaRow label="Time" value={formatTime(displayValue(item, ['show_time', 'time', 'start_time']))} />
-                  <MetaRow label="Age" value={displayValue(item, ['age_rating', 'rating'])} />
-                  <MetaRow label="Duration" value={displayValue(item, ['duration', 'runtime'])} />
+                <Text style={styles.theatreName}>{displayValue(item, ['theatre_name', 'theatre', 'venue'], 'Theatre TBC')}</Text>
+                <View style={styles.chipRow}>
+                  <MetadataChip label="Date" value={formatDate(displayValue(item, ['show_date', 'date']))} tone="accent" />
+                  <MetadataChip label="Time" value={formatTime(displayValue(item, ['show_time', 'time', 'start_time']))} />
+                  <MetadataChip label="Age" value={displayValue(item, ['age_rating', 'rating'])} />
+                  <MetadataChip label="Duration" value={displayValue(item, ['duration', 'runtime'])} />
                 </View>
+                <MetaRow label="About" value={displayValue(item, ['description', 'summary'])} />
                 {showId ? <Text style={styles.linkText}>View details and showtimes</Text> : null}
               </AppCard>
             </Pressable>
@@ -184,7 +186,7 @@ export default function ShowsScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   filterCard: {
-    marginBottom: spacing.md,
+    marginBottom: spacing.lg,
   },
   filterActions: {
     flexDirection: 'row',
@@ -220,6 +222,7 @@ const styles = StyleSheet.create({
   },
   item: {
     marginBottom: spacing.md,
+    minHeight: 142,
   },
   cardPressed: {
     opacity: 0.86,
@@ -229,6 +232,18 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '800',
     marginBottom: spacing.xs,
+  },
+  theatreName: {
+    color: colors.textMuted,
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: spacing.sm,
+  },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
   },
   metaGrid: {
     gap: spacing.xs,
