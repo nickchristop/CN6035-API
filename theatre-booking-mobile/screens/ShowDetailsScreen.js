@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Button,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -34,6 +35,10 @@ function valueFor(item, keys, fallback = 'Not provided') {
   return value === undefined ? fallback : String(value);
 }
 
+function showtimeIdFor(showtime) {
+  return showtime?.showtime_id ?? showtime?.id;
+}
+
 export default function ShowDetailsScreen({ route, navigation }) {
   const { showId } = route.params ?? {};
   const [show, setShow] = useState(null);
@@ -53,8 +58,9 @@ export default function ShowDetailsScreen({ route, navigation }) {
     try {
       const response = await api.get(`/shows/${showId}`);
       const nextShow = firstShow(response.data);
+      const nextShowtimes = showtimesFor(response.data, nextShow);
       setShow(nextShow);
-      setShowtimes(showtimesFor(response.data, nextShow));
+      setShowtimes(nextShowtimes.length ? nextShowtimes : (showtimeIdFor(nextShow) ? [nextShow] : []));
     } catch (err) {
       setError(err.response?.data?.message ?? err.message ?? 'Unable to load show details.');
     } finally {
@@ -100,10 +106,17 @@ export default function ShowDetailsScreen({ route, navigation }) {
             <Text style={styles.sectionTitle}>Showtimes</Text>
             {showtimes.length ? (
               showtimes.map((showtime, index) => (
-                <View key={String(showtime.showtime_id ?? showtime.id ?? index)} style={styles.showtimeItem}>
+                <Pressable
+                  key={String(showtimeIdFor(showtime) ?? index)}
+                  style={({ pressed }) => [styles.showtimeItem, pressed && styles.showtimePressed]}
+                  onPress={() => navigation.navigate('CreateReservation', { show, showtime })}
+                >
                   <Text style={styles.value}>{valueFor(showtime, ['show_time', 'time', 'start_time'])}</Text>
                   <Text style={styles.smallText}>{valueFor(showtime, ['show_date', 'date'], '')}</Text>
-                </View>
+                  <Text style={styles.smallText}>Hall: {valueFor(showtime, ['hall', 'hall_name', 'screen', 'screen_name'])}</Text>
+                  <Text style={styles.smallText}>Price: {valueFor(showtime, ['price', 'ticket_price'])}</Text>
+                  <Text style={styles.reserveText}>Reserve seats</Text>
+                </Pressable>
               ))
             ) : (
               <Text style={styles.empty}>No related showtimes available.</Text>
@@ -132,6 +145,8 @@ const styles = StyleSheet.create({
   value: { color: '#222', marginTop: 3 },
   smallText: { color: '#555', marginTop: 2 },
   empty: { color: '#555' },
-  showtimeItem: { paddingVertical: 8, borderTopWidth: 1, borderTopColor: '#eee' },
+  showtimeItem: { paddingVertical: 10, borderTopWidth: 1, borderTopColor: '#eee' },
+  showtimePressed: { backgroundColor: '#f1f6ff' },
+  reserveText: { color: '#007AFF', fontWeight: '600', marginTop: 8 },
   actions: { gap: 10 },
 });

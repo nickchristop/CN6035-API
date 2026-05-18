@@ -9,6 +9,7 @@ import HomeScreen from '../screens/HomeScreen';
 import TheatresScreen from '../screens/TheatresScreen';
 import ShowsScreen from '../screens/ShowsScreen';
 import ShowDetailsScreen from '../screens/ShowDetailsScreen';
+import CreateReservationScreen from '../screens/CreateReservationScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -32,6 +33,7 @@ export default function AppNavigator() {
             <Stack.Screen name="Theatres" component={TheatresScreen} />
             <Stack.Screen name="Shows" component={ShowsScreen} />
             <Stack.Screen name="ShowDetails" component={ShowDetailsScreen} />
+            <Stack.Screen name="CreateReservation" component={CreateReservationScreen} />
           </>
         ) : (
           <>
