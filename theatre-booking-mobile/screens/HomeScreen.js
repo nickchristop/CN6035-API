@@ -30,21 +30,21 @@ export default function HomeScreen({ navigation }) {
 
       <View style={styles.actions}>
         <DashboardCard
-          marker="V"
+          icon="venue"
           eyebrow="Venues"
           title="Browse Theatres"
           body="Compare venues and capacities."
           onPress={() => navigation.navigate('Theatres')}
         />
         <DashboardCard
-          marker="S"
+          icon="shows"
           eyebrow="Now playing"
           title="Browse Shows"
           body="Find performances and showtimes."
           onPress={() => navigation.navigate('Shows')}
         />
         <DashboardCard
-          marker="T"
+          icon="tickets"
           eyebrow="Your tickets"
           title="My Reservations"
           body="Edit seats or cancel bookings."

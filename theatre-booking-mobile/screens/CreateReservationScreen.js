@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import AppButton from '../components/AppButton';
 import AppCard from '../components/AppCard';
 import AppInput from '../components/AppInput';
+import SeatSelector from '../components/SeatSelector';
 import ScreenContainer from '../components/ScreenContainer';
 import { FeedbackMessage } from '../components/StateView';
 import { MetaRow, ScreenHeader } from '../components/TextBits';
@@ -28,14 +29,29 @@ export default function CreateReservationScreen({ route, navigation }) {
   const { token } = useAuth();
   const { show = null, showtime = null } = route.params ?? {};
   const [seatsReserved, setSeatsReserved] = useState('1');
+  const [selectedSeats, setSelectedSeats] = useState([]);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
 
   const showtimeId = showtimeIdFor(showtime);
+  const totalSeats = numberFor(showtime, ['total_seats', 'totalSeats', 'capacity']);
   const availableSeats = numberFor(showtime, ['available_seats', 'seats_available', 'remaining_seats']);
+  const hasSeatMap = totalSeats !== null || availableSeats !== null;
 
   function validateSeats() {
+    if (hasSeatMap) {
+      if (selectedSeats.length === 0) {
+        return 'Select at least one seat.';
+      }
+
+      if (availableSeats !== null && selectedSeats.length > availableSeats) {
+        return `Selected seats cannot be greater than ${availableSeats}.`;
+      }
+
+      return '';
+    }
+
     const trimmedSeats = seatsReserved.trim();
 
     if (!trimmedSeats) {
@@ -86,7 +102,7 @@ export default function CreateReservationScreen({ route, navigation }) {
     try {
       await api.post('/reservations', {
         showtime_id: showtimeId,
-        seats_reserved: Number(seatsReserved.trim()),
+        seats_reserved: hasSeatMap ? selectedSeats.length : Number(seatsReserved.trim()),
       });
       setSuccess('Reservation created successfully.');
       setTimeout(() => navigation.navigate('Home'), 700);
@@ -119,14 +135,23 @@ export default function CreateReservationScreen({ route, navigation }) {
       </AppCard>
 
       <AppCard compact accent="left" style={styles.section}>
-        <AppInput
-          label="Seats reserved"
-          value={seatsReserved}
-          onChangeText={setSeatsReserved}
-          keyboardType="number-pad"
-          placeholder="Seats reserved"
-          compact
-        />
+        {hasSeatMap ? (
+          <SeatSelector
+            totalSeats={totalSeats}
+            availableSeats={availableSeats}
+            selectedSeats={selectedSeats}
+            onChange={setSelectedSeats}
+          />
+        ) : (
+          <AppInput
+            label="Seats reserved"
+            value={seatsReserved}
+            onChangeText={setSeatsReserved}
+            keyboardType="number-pad"
+            placeholder="Seats reserved"
+            compact
+          />
+        )}
         <FeedbackMessage message={error} />
         <FeedbackMessage type="success" message={success} />
         <AppButton title="Create Reservation" onPress={handleCreateReservation} loading={loading} style={styles.submitButton} />
