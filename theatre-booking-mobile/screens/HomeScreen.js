@@ -12,6 +12,7 @@ export default function HomeScreen({ navigation }) {
       <View style={styles.actions}>
         <Button title="Browse Theatres" onPress={() => navigation.navigate('Theatres')} />
         <Button title="Browse Shows" onPress={() => navigation.navigate('Shows')} />
+        <Button title="My Reservations" onPress={() => navigation.navigate('Reservations')} />
       </View>
       <Button title="Logout" onPress={logout} />
     </View>
