@@ -207,6 +207,9 @@ export default function ReservationsScreen({ navigation }) {
       <FlatList
         data={reservations}
         keyExtractor={(item, index) => String(reservationIdFor(item) ?? index)}
+        overScrollMode="never"
+        showsVerticalScrollIndicator={false}
+        style={styles.list}
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={!error ? <EmptyState message="You have no reservations yet." /> : null}
         renderItem={({ item }) => {
@@ -310,6 +313,9 @@ export default function ReservationsScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+  list: {
+    backgroundColor: colors.background,
+  },
   listContent: {
     paddingBottom: spacing.lg,
   },

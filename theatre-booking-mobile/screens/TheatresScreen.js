@@ -106,6 +106,9 @@ export default function TheatresScreen({ navigation }) {
       <FlatList
         data={theatres}
         keyExtractor={(item, index) => String(item.theatre_id ?? item.id ?? index)}
+        overScrollMode="never"
+        showsVerticalScrollIndicator={false}
+        style={styles.list}
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={!error ? <EmptyState message="No theatres found." /> : null}
         renderItem={({ item }) => (
@@ -131,6 +134,9 @@ export default function TheatresScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+  list: {
+    backgroundColor: colors.background,
+  },
   filterCard: {
     marginBottom: spacing.lg,
   },

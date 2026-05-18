@@ -151,6 +151,9 @@ export default function ShowsScreen({ navigation }) {
       <FlatList
         data={shows}
         keyExtractor={(item, index) => String(showIdFor(item) ?? index)}
+        overScrollMode="never"
+        showsVerticalScrollIndicator={false}
+        style={styles.list}
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={!error ? <EmptyState message="No shows found." /> : null}
         renderItem={({ item }) => {
@@ -185,6 +188,9 @@ export default function ShowsScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+  list: {
+    backgroundColor: colors.background,
+  },
   filterCard: {
     marginBottom: spacing.lg,
   },

@@ -1,9 +1,11 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { Platform } from 'react-native';
+import { DarkTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import ScreenContainer from '../components/ScreenContainer';
 import { LoadingState } from '../components/StateView';
 import { useAuth } from '../context/AuthContext';
+import { colors } from '../theme';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
 import HomeScreen from '../screens/HomeScreen';
@@ -14,6 +16,39 @@ import CreateReservationScreen from '../screens/CreateReservationScreen';
 import ReservationsScreen from '../screens/ReservationsScreen';
 
 const Stack = createNativeStackNavigator();
+
+const navigationTheme = {
+  ...DarkTheme,
+  colors: {
+    ...DarkTheme.colors,
+    primary: colors.accent,
+    background: colors.background,
+    card: colors.background,
+    text: colors.text,
+    border: colors.border,
+    notification: colors.primary,
+  },
+};
+
+const stackScreenOptions = {
+  headerShown: false,
+  presentation: 'card',
+  animation: Platform.select({
+    android: 'ios_from_right',
+    ios: 'simple_push',
+    default: 'default',
+  }),
+  animationDuration: 260,
+  animationMatchesGesture: true,
+  gestureEnabled: true,
+  contentStyle: {
+    backgroundColor: colors.background,
+  },
+  statusBarStyle: 'light',
+  statusBarBackgroundColor: colors.background,
+  statusBarAnimation: 'fade',
+  navigationBarColor: colors.background,
+};
 
 export default function AppNavigator() {
   const { token, isLoading } = useAuth();
@@ -27,8 +62,8 @@ export default function AppNavigator() {
   }
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <NavigationContainer theme={navigationTheme}>
+      <Stack.Navigator screenOptions={stackScreenOptions}>
         {token ? (
           <>
             <Stack.Screen name="Home" component={HomeScreen} />

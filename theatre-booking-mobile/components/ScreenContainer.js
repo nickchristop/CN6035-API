@@ -12,17 +12,19 @@ export default function ScreenContainer({ children, scroll = false, centered = f
   ];
 
   return (
-    <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={[styles.safe, style]}>
+    <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={[styles.safe, style, styles.background]}>
       {scroll ? (
         <ScrollView
           keyboardShouldPersistTaps="handled"
+          overScrollMode="never"
           showsVerticalScrollIndicator={false}
+          style={styles.scroll}
           contentContainerStyle={content}
         >
           {children}
         </ScrollView>
       ) : (
-        <View style={[styles.fill, ...content]}>
+        <View style={[styles.fill, styles.background, ...content]}>
           {children}
         </View>
       )}
@@ -35,8 +37,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  background: {
+    backgroundColor: colors.background,
+  },
   fill: {
     flex: 1,
+  },
+  scroll: {
+    flex: 1,
+    backgroundColor: colors.background,
   },
   content: {
     paddingHorizontal: spacing.lg,
