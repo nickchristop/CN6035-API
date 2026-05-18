@@ -13,9 +13,17 @@ export function DashboardCard({ icon = 'venue', eyebrow, title, body, onPress })
           <Text style={styles.dashboardTitle}>{title}</Text>
           <Text style={styles.dashboardBody}>{body}</Text>
         </View>
-        <Text style={styles.arrow}>{'>'}</Text>
+        <Chevron />
       </AppCard>
     </Pressable>
+  );
+}
+
+function Chevron() {
+  return (
+    <View style={styles.chevronWrap}>
+      <View style={styles.chevron} />
+    </View>
   );
 }
 
@@ -176,10 +184,25 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     marginTop: spacing.xs,
   },
-  arrow: {
-    color: colors.accentSoft,
-    fontSize: 26,
-    fontWeight: '700',
+  chevronWrap: {
+    alignItems: 'center',
+    backgroundColor: colors.backgroundAlt,
+    borderColor: colors.borderSoft,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    height: 30,
+    justifyContent: 'center',
+    width: 30,
+  },
+  chevron: {
+    borderBottomColor: colors.accentSoft,
+    borderBottomWidth: 2,
+    borderRightColor: colors.accentSoft,
+    borderRightWidth: 2,
+    height: 8,
+    marginRight: 3,
+    transform: [{ rotate: '-45deg' }],
+    width: 8,
   },
   chip: {
     alignSelf: 'flex-start',

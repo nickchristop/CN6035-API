@@ -44,6 +44,7 @@ export default function SeatSelector({ totalSeats, availableSeats, selectedSeats
     return (
       <View style={styles.wrapper}>
         <View style={styles.stage}>
+          <View style={styles.stageLine} />
           <Text style={styles.stageText}>STAGE</Text>
         </View>
         <Text style={styles.noSeatsText}>No selectable seats are available for this showtime.</Text>
@@ -76,6 +77,7 @@ export default function SeatSelector({ totalSeats, availableSeats, selectedSeats
   return (
     <View style={styles.wrapper}>
       <View style={styles.stage}>
+        <View style={styles.stageLine} />
         <Text style={styles.stageText}>STAGE</Text>
       </View>
 
@@ -119,9 +121,10 @@ export default function SeatSelector({ totalSeats, availableSeats, selectedSeats
         <LegendItem style={styles.legendReserved} label="Reserved" />
       </View>
 
-      <Text style={styles.selectedCount}>
-        Selected seats: {selectedSeats.length}
-      </Text>
+      <View style={styles.selectedSummary}>
+        <Text style={styles.selectedLabel}>Selected seats</Text>
+        <Text style={styles.selectedCount}>{selectedSeats.length}</Text>
+      </View>
     </View>
   );
 }
@@ -142,13 +145,21 @@ const styles = StyleSheet.create({
   stage: {
     alignItems: 'center',
     alignSelf: 'center',
-    backgroundColor: colors.backgroundAlt,
+    backgroundColor: '#21181d',
     borderColor: colors.accent,
     borderRadius: radius.pill,
     borderWidth: 1,
+    gap: spacing.xs,
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.sm,
-    width: '78%',
+    width: '74%',
+  },
+  stageLine: {
+    backgroundColor: colors.accent,
+    borderRadius: radius.pill,
+    height: 3,
+    opacity: 0.75,
+    width: '64%',
   },
   stageText: {
     color: colors.accentSoft,
@@ -157,7 +168,9 @@ const styles = StyleSheet.create({
     letterSpacing: 0,
   },
   seatMap: {
+    alignSelf: 'center',
     gap: spacing.sm,
+    maxWidth: '100%',
   },
   row: {
     alignItems: 'center',
@@ -191,6 +204,7 @@ const styles = StyleSheet.create({
   seatUnavailable: {
     backgroundColor: '#2a2528',
     borderColor: colors.borderSoft,
+    opacity: 0.72,
   },
   seatText: {
     color: colors.accentSoft,
@@ -204,9 +218,16 @@ const styles = StyleSheet.create({
     color: colors.textSubtle,
   },
   legend: {
+    alignItems: 'center',
+    backgroundColor: colors.backgroundAlt,
+    borderColor: colors.borderSoft,
+    borderRadius: radius.md,
+    borderWidth: 1,
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.md,
+    justifyContent: 'center',
+    padding: spacing.sm,
   },
   legendItem: {
     alignItems: 'center',
@@ -236,9 +257,25 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
   },
+  selectedSummary: {
+    alignItems: 'center',
+    backgroundColor: '#3b2a19',
+    borderColor: colors.accent,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  selectedLabel: {
+    color: colors.accentSoft,
+    fontSize: 13,
+    fontWeight: '800',
+  },
   selectedCount: {
     color: colors.text,
-    fontSize: 15,
+    fontSize: 18,
     fontWeight: '900',
   },
   noSeatsText: {

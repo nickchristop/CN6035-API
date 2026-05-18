@@ -154,7 +154,12 @@ export default function CreateReservationScreen({ route, navigation }) {
         )}
         <FeedbackMessage message={error} />
         <FeedbackMessage type="success" message={success} />
-        <AppButton title="Create Reservation" onPress={handleCreateReservation} loading={loading} style={styles.submitButton} />
+        <AppButton
+          title={hasSeatMap ? 'Reserve Selected Seats' : 'Create Reservation'}
+          onPress={handleCreateReservation}
+          loading={loading}
+          style={styles.submitButton}
+        />
       </AppCard>
 
       <View style={styles.actions}>

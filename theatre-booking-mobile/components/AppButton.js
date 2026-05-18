@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors, radius, spacing } from '../theme';
 
 export default function AppButton({ title, onPress, variant = 'primary', disabled = false, loading = false, compact = false, style }) {
@@ -20,7 +20,12 @@ export default function AppButton({ title, onPress, variant = 'primary', disable
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'secondary' || variant === 'ghost' ? colors.accent : colors.white} />
+        <View style={styles.loadingContent}>
+          <ActivityIndicator color={variant === 'secondary' || variant === 'ghost' ? colors.accent : colors.white} />
+          <Text style={[styles.text, styles.loadingText, (variant === 'secondary' || variant === 'ghost') && styles.secondaryText]}>
+            {title}
+          </Text>
+        </View>
       ) : (
         <Text style={[styles.text, (variant === 'secondary' || variant === 'ghost') && styles.secondaryText]}>
           {title}
@@ -83,6 +88,15 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
     textAlign: 'center',
+  },
+  loadingContent: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.sm,
+    justifyContent: 'center',
+  },
+  loadingText: {
+    opacity: 0.9,
   },
   secondaryText: {
     color: colors.accentSoft,

@@ -259,7 +259,7 @@ export default function ReservationsScreen({ navigation }) {
                             style={styles.actionButton}
                           />
                           <AppButton
-                            title="Cancel Edit"
+                            title="Discard"
                             onPress={cancelEditingReservation}
                             disabled={hasBusyAction}
                             variant="secondary"
@@ -280,7 +280,7 @@ export default function ReservationsScreen({ navigation }) {
                           style={styles.actionButton}
                         />
                         {isCanceling ? (
-                          <AppButton title="Cancelling..." loading disabled variant="danger" compact />
+                          <AppButton title="Cancelling..." loading disabled variant="danger" compact style={styles.actionButton} />
                         ) : (
                           <AppButton
                             title="Cancel Reservation"

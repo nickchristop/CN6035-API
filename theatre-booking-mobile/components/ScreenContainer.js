@@ -14,7 +14,11 @@ export default function ScreenContainer({ children, scroll = false, centered = f
   return (
     <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={[styles.safe, style]}>
       {scroll ? (
-        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={content}>
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={content}
+        >
           {children}
         </ScrollView>
       ) : (
@@ -36,11 +40,11 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xxl,
+    paddingTop: spacing.xxl + spacing.xs,
     paddingBottom: spacing.xxl + spacing.lg,
   },
   compact: {
-    paddingTop: spacing.xl,
+    paddingTop: spacing.xxl,
   },
   centered: {
     flexGrow: 1,
