@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Button,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import AppButton from '../components/AppButton';
+import AppCard from '../components/AppCard';
+import ScreenContainer from '../components/ScreenContainer';
+import { ErrorState, LoadingState } from '../components/StateView';
+import { MetaRow, ScreenHeader, SectionTitle } from '../components/TextBits';
+import { colors, spacing } from '../theme';
 import api from '../services/api';
 
 function firstShow(data) {
@@ -74,36 +72,33 @@ export default function ShowDetailsScreen({ route, navigation }) {
 
   if (loading) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator />
-        <Text style={styles.statusText}>Loading show details...</Text>
-      </View>
+      <ScreenContainer>
+        <LoadingState title="Loading show details..." />
+      </ScreenContainer>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>{valueFor(show, ['title', 'name', 'show_name'], 'Show details')}</Text>
+    <ScreenContainer scroll>
+      <ScreenHeader
+        eyebrow="Show details"
+        title={valueFor(show, ['title', 'name', 'show_name'], 'Show details')}
+        subtitle="Review the performance details and choose a showtime."
+      />
+
       {error ? (
-        <View style={styles.messageBlock}>
-          <Text style={styles.error}>{error}</Text>
-          <Button title="Try again" onPress={loadShowDetails} />
-        </View>
+        <ErrorState message={error} onRetry={loadShowDetails} />
       ) : (
         <>
-          <View style={styles.section}>
-            <Text style={styles.label}>Theatre</Text>
-            <Text style={styles.value}>{valueFor(show, ['theatre_name', 'theatre', 'venue'])}</Text>
-            <Text style={styles.label}>Date</Text>
-            <Text style={styles.value}>{valueFor(show, ['show_date', 'date'])}</Text>
-            <Text style={styles.label}>Time</Text>
-            <Text style={styles.value}>{valueFor(show, ['show_time', 'time', 'start_time'])}</Text>
-            <Text style={styles.label}>Description</Text>
-            <Text style={styles.value}>{valueFor(show, ['description', 'summary'])}</Text>
-          </View>
+          <AppCard style={styles.section}>
+            <MetaRow label="Theatre" value={valueFor(show, ['theatre_name', 'theatre', 'venue'])} />
+            <MetaRow label="Date" value={valueFor(show, ['show_date', 'date'])} />
+            <MetaRow label="Time" value={valueFor(show, ['show_time', 'time', 'start_time'])} />
+            <MetaRow label="Description" value={valueFor(show, ['description', 'summary'])} />
+          </AppCard>
 
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Showtimes</Text>
+          <AppCard style={styles.section}>
+            <SectionTitle>Showtimes</SectionTitle>
             {showtimes.length ? (
               showtimes.map((showtime, index) => (
                 <Pressable
@@ -111,42 +106,63 @@ export default function ShowDetailsScreen({ route, navigation }) {
                   style={({ pressed }) => [styles.showtimeItem, pressed && styles.showtimePressed]}
                   onPress={() => navigation.navigate('CreateReservation', { show, showtime })}
                 >
-                  <Text style={styles.value}>{valueFor(showtime, ['show_time', 'time', 'start_time'])}</Text>
+                  <View style={styles.showtimeHeader}>
+                    <Text style={styles.showtimeTime}>{valueFor(showtime, ['show_time', 'time', 'start_time'])}</Text>
+                    <Text style={styles.reserveText}>Reserve seats</Text>
+                  </View>
                   <Text style={styles.smallText}>{valueFor(showtime, ['show_date', 'date'], '')}</Text>
                   <Text style={styles.smallText}>Hall: {valueFor(showtime, ['hall', 'hall_name', 'screen', 'screen_name'])}</Text>
                   <Text style={styles.smallText}>Price: {valueFor(showtime, ['price', 'ticket_price'])}</Text>
-                  <Text style={styles.reserveText}>Reserve seats</Text>
                 </Pressable>
               ))
             ) : (
               <Text style={styles.empty}>No related showtimes available.</Text>
             )}
-          </View>
+          </AppCard>
         </>
       )}
+
       <View style={styles.actions}>
-        <Button title="Back to Shows" onPress={() => navigation.navigate('Shows')} />
-        <Button title="Home" onPress={() => navigation.navigate('Home')} />
+        <AppButton title="Back to Shows" onPress={() => navigation.navigate('Shows')} variant="secondary" />
+        <AppButton title="Home" onPress={() => navigation.navigate('Home')} variant="ghost" />
       </View>
-    </ScrollView>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20, paddingTop: 56 },
-  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  title: { fontSize: 26, fontWeight: 'bold', marginBottom: 16 },
-  statusText: { marginTop: 12, color: '#555' },
-  messageBlock: { marginBottom: 16 },
-  error: { color: '#cc0000', marginBottom: 8 },
-  section: { borderWidth: 1, borderColor: '#ddd', borderRadius: 6, padding: 14, marginBottom: 16 },
-  sectionTitle: { fontSize: 18, fontWeight: '600', marginBottom: 10 },
-  label: { color: '#555', fontWeight: '600', marginTop: 10 },
-  value: { color: '#222', marginTop: 3 },
-  smallText: { color: '#555', marginTop: 2 },
-  empty: { color: '#555' },
-  showtimeItem: { paddingVertical: 10, borderTopWidth: 1, borderTopColor: '#eee' },
-  showtimePressed: { backgroundColor: '#f1f6ff' },
-  reserveText: { color: '#007AFF', fontWeight: '600', marginTop: 8 },
-  actions: { gap: 10 },
+  section: {
+    marginBottom: spacing.lg,
+  },
+  showtimeItem: {
+    borderTopColor: colors.border,
+    borderTopWidth: 1,
+    paddingVertical: spacing.md,
+  },
+  showtimePressed: {
+    backgroundColor: colors.surfaceRaised,
+  },
+  showtimeHeader: {
+    gap: spacing.sm,
+    marginBottom: spacing.xs,
+  },
+  showtimeTime: {
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  smallText: {
+    color: colors.textMuted,
+    marginTop: spacing.xs,
+  },
+  reserveText: {
+    color: colors.accentSoft,
+    fontWeight: '800',
+  },
+  empty: {
+    color: colors.textMuted,
+  },
+  actions: {
+    gap: spacing.sm,
+  },
 });

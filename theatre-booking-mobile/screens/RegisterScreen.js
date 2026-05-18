@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import {
-  ActivityIndicator,
-  Button,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Pressable, StyleSheet, Text } from 'react-native';
+import AppButton from '../components/AppButton';
+import AppCard from '../components/AppCard';
+import AppInput from '../components/AppInput';
+import ScreenContainer from '../components/ScreenContainer';
+import { FeedbackMessage } from '../components/StateView';
+import { ScreenHeader } from '../components/TextBits';
+import { colors, spacing } from '../theme';
 import api from '../services/api';
 
 export default function RegisterScreen({ navigation }) {
@@ -28,33 +28,13 @@ export default function RegisterScreen({ navigation }) {
     setError('');
     setLoading(true);
     try {
-      const registerPath = '/auth/register';
-      const payload = {
+      await api.post('/auth/register', {
         name: trimmedName,
         email: trimmedEmail,
         password,
-      };
-
-      console.log('Register request: sending', {
-        baseURL: api.defaults.baseURL,
-        path: registerPath,
-        email: trimmedEmail,
       });
-
-      const response = await api.post(registerPath, payload);
-
-      console.log('Register request: success', {
-        status: response.status,
-        data: response.data,
-      });
-
       navigation.navigate('Login');
     } catch (err) {
-      console.log('Register request: error', {
-        message: err.message,
-        data: err.response?.data,
-      });
-
       setError(err.response?.data?.message ?? 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
@@ -62,50 +42,55 @@ export default function RegisterScreen({ navigation }) {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Register</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Name"
-        autoComplete="name"
-        value={name}
-        onChangeText={setName}
+    <ScreenContainer scroll centered>
+      <ScreenHeader
+        eyebrow="Join the audience"
+        title="Create your account"
+        subtitle="Register once, then reserve seats and track every booking from your phone."
       />
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        autoCapitalize="none"
-        autoComplete="email"
-        keyboardType="email-address"
-        value={email}
-        onChangeText={setEmail}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        autoComplete="new-password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
-      {loading ? (
-        <ActivityIndicator style={styles.spinner} />
-      ) : (
-        <Button title="Register" onPress={handleRegister} />
-      )}
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-      <Text style={styles.link} onPress={() => navigation.navigate('Login')}>
-        Already have an account? Login
-      </Text>
-    </View>
+      <AppCard>
+        <AppInput
+          label="Name"
+          placeholder="Full name"
+          autoComplete="name"
+          value={name}
+          onChangeText={setName}
+        />
+        <AppInput
+          label="Email"
+          placeholder="you@example.com"
+          autoCapitalize="none"
+          autoComplete="email"
+          keyboardType="email-address"
+          value={email}
+          onChangeText={setEmail}
+        />
+        <AppInput
+          label="Password"
+          placeholder="Create a password"
+          autoComplete="new-password"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+        />
+        <FeedbackMessage message={error} />
+        <AppButton title="Register" onPress={handleRegister} loading={loading} />
+      </AppCard>
+      <Pressable style={styles.linkWrapper} onPress={() => navigation.navigate('Login')}>
+        <Text style={styles.link}>Already have an account? Login</Text>
+      </Pressable>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 24 },
-  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 24, textAlign: 'center' },
-  input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 6, padding: 10, marginBottom: 12 },
-  spinner: { marginVertical: 8 },
-  error: { color: '#cc0000', textAlign: 'center', marginTop: 8 },
-  link: { marginTop: 16, textAlign: 'center', color: '#007AFF' },
+  linkWrapper: {
+    marginTop: spacing.lg,
+    padding: spacing.sm,
+  },
+  link: {
+    color: colors.accentSoft,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
 });

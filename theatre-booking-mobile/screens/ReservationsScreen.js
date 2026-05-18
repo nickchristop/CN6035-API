@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  Button,
-  FlatList,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
+import AppButton from '../components/AppButton';
+import AppCard from '../components/AppCard';
+import AppInput from '../components/AppInput';
+import ScreenContainer from '../components/ScreenContainer';
+import { EmptyState, ErrorState, FeedbackMessage, LoadingState } from '../components/StateView';
+import { MetaRow, Pill, ScreenHeader } from '../components/TextBits';
+import { colors, spacing } from '../theme';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 
@@ -184,49 +182,54 @@ export default function ReservationsScreen({ navigation }) {
 
   if (loading) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator />
-        <Text style={styles.statusText}>Loading reservations...</Text>
-      </View>
+      <ScreenContainer>
+        <LoadingState title="Loading reservations..." />
+      </ScreenContainer>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>My Reservations</Text>
-      {error ? (
-        <View style={styles.messageBlock}>
-          <Text style={styles.error}>{error}</Text>
-          <Button title="Try again" onPress={loadReservations} />
-        </View>
-      ) : null}
-      {success ? <Text style={styles.success}>{success}</Text> : null}
+    <ScreenContainer>
+      <ScreenHeader
+        eyebrow="Your tickets"
+        title="My Reservations"
+        subtitle="Review bookings, edit seat counts, or cancel active reservations."
+      />
+
+      {error ? <ErrorState message={error} onRetry={loadReservations} /> : null}
+      <FeedbackMessage type="success" message={success} />
+
       <FlatList
         data={reservations}
         keyExtractor={(item, index) => String(reservationIdFor(item) ?? index)}
-        ListEmptyComponent={!error ? <Text style={styles.empty}>You have no reservations yet.</Text> : null}
+        contentContainerStyle={styles.listContent}
+        ListEmptyComponent={!error ? <EmptyState message="You have no reservations yet." /> : null}
         renderItem={({ item }) => {
           const reservationId = reservationIdFor(item);
           const isCanceling = cancelingReservationId === reservationId;
           const isEditing = editingReservationId === reservationId;
           const isUpdating = updatingReservationId === reservationId;
           const hasBusyAction = cancelingReservationId !== null || updatingReservationId !== null;
+          const active = isActiveReservation(item);
 
           return (
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>{valueFor(item, ['show_title', 'title', 'show_name'], 'Untitled show')}</Text>
-              <Text style={styles.cardText}>Theatre: {valueFor(item, ['theatre_name', 'theatre', 'venue'])}</Text>
-              <Text style={styles.cardText}>Date: {valueFor(item, ['show_date', 'date'])}</Text>
-              <Text style={styles.cardText}>Time: {valueFor(item, ['show_time', 'time', 'start_time'])}</Text>
-              <Text style={styles.cardText}>Seats: {valueFor(item, ['seats_reserved', 'seats', 'quantity'])}</Text>
-              <Text style={styles.status}>Status: {statusFor(item)}</Text>
-              {isActiveReservation(item) ? (
+            <AppCard style={styles.card}>
+              <View style={styles.cardHeader}>
+                <Text style={styles.cardTitle}>{valueFor(item, ['show_title', 'title', 'show_name'], 'Untitled show')}</Text>
+                <Pill tone={active ? 'accent' : 'danger'}>{statusFor(item)}</Pill>
+              </View>
+              <MetaRow label="Theatre" value={valueFor(item, ['theatre_name', 'theatre', 'venue'])} />
+              <View style={styles.metaGrid}>
+                <MetaRow label="Date" value={valueFor(item, ['show_date', 'date'])} />
+                <MetaRow label="Time" value={valueFor(item, ['show_time', 'time', 'start_time'])} />
+                <MetaRow label="Seats" value={valueFor(item, ['seats_reserved', 'seats', 'quantity'])} />
+              </View>
+              {active ? (
                 <View style={styles.cardActions}>
                   {isEditing ? (
                     <>
-                      <Text style={styles.inputLabel}>Seats reserved</Text>
-                      <TextInput
-                        style={styles.input}
+                      <AppInput
+                        label="Seats reserved"
                         value={editSeatsReserved}
                         onChangeText={setEditSeatsReserved}
                         keyboardType="number-pad"
@@ -234,75 +237,80 @@ export default function ReservationsScreen({ navigation }) {
                         editable={!isUpdating}
                       />
                       {isUpdating ? (
-                        <>
-                          <ActivityIndicator />
-                          <Text style={styles.busyText}>Updating...</Text>
-                        </>
+                        <AppButton title="Updating..." loading disabled />
                       ) : (
                         <View style={styles.editActions}>
-                          <Button
+                          <AppButton
                             title="Save"
                             onPress={() => updateReservation(reservationId)}
                             disabled={hasBusyAction}
                           />
-                          <Button
+                          <AppButton
                             title="Cancel Edit"
                             onPress={cancelEditingReservation}
                             disabled={hasBusyAction}
+                            variant="secondary"
                           />
                         </View>
                       )}
                     </>
                   ) : (
                     <>
-                      <Button
+                      <AppButton
                         title="Edit Seats"
                         onPress={() => startEditingReservation(item)}
                         disabled={hasBusyAction}
+                        variant="secondary"
                       />
                       {isCanceling ? (
-                        <>
-                          <ActivityIndicator style={styles.inlineSpinner} />
-                          <Text style={styles.busyText}>Cancelling...</Text>
-                        </>
+                        <AppButton title="Cancelling..." loading disabled variant="danger" />
                       ) : (
-                        <Button
+                        <AppButton
                           title="Cancel Reservation"
-                          color="#cc0000"
                           onPress={() => confirmCancelReservation(item)}
                           disabled={hasBusyAction}
+                          variant="danger"
                         />
                       )}
                     </>
                   )}
                 </View>
               ) : null}
-            </View>
+            </AppCard>
           );
         }}
       />
-      <Button title="Back to Home" onPress={() => navigation.navigate('Home')} />
-    </View>
+
+      <AppButton title="Back to Home" onPress={() => navigation.navigate('Home')} variant="ghost" />
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, paddingTop: 56 },
-  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  title: { fontSize: 26, fontWeight: 'bold', marginBottom: 16 },
-  statusText: { marginTop: 12, color: '#555' },
-  messageBlock: { marginBottom: 16 },
-  error: { color: '#cc0000', marginBottom: 8 },
-  success: { color: '#087f23', marginBottom: 12 },
-  empty: { color: '#555', textAlign: 'center', marginTop: 24 },
-  card: { borderWidth: 1, borderColor: '#ddd', borderRadius: 6, padding: 14, marginBottom: 12 },
-  cardTitle: { fontSize: 18, fontWeight: '600', marginBottom: 6 },
-  cardText: { color: '#444', marginTop: 2 },
-  status: { color: '#222', fontWeight: '600', marginTop: 8 },
-  cardActions: { gap: 8, marginTop: 12 },
-  editActions: { gap: 8 },
-  inputLabel: { color: '#555', fontWeight: '600' },
-  input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 6, padding: 10 },
-  inlineSpinner: { marginTop: 8 },
-  busyText: { color: '#555', marginTop: 6 },
+  listContent: {
+    paddingBottom: spacing.lg,
+  },
+  card: {
+    marginBottom: spacing.md,
+  },
+  cardHeader: {
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  cardTitle: {
+    color: colors.text,
+    fontSize: 20,
+    fontWeight: '800',
+  },
+  metaGrid: {
+    gap: spacing.md,
+    marginTop: spacing.sm,
+  },
+  cardActions: {
+    gap: spacing.sm,
+    marginTop: spacing.lg,
+  },
+  editActions: {
+    gap: spacing.sm,
+  },
 });

@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Button,
-  FlatList,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
+import AppButton from '../components/AppButton';
+import AppCard from '../components/AppCard';
+import AppInput from '../components/AppInput';
+import ScreenContainer from '../components/ScreenContainer';
+import { EmptyState, ErrorState, LoadingState } from '../components/StateView';
+import { MetaRow, ScreenHeader, Pill } from '../components/TextBits';
+import { colors, spacing } from '../theme';
 import api from '../services/api';
 
 function asList(data) {
@@ -74,19 +73,23 @@ export default function TheatresScreen({ navigation }) {
 
   if (loading) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator />
-        <Text style={styles.statusText}>Loading theatres...</Text>
-      </View>
+      <ScreenContainer>
+        <LoadingState title="Loading theatres..." />
+      </ScreenContainer>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Theatres</Text>
-      <View style={styles.filters}>
-        <TextInput
-          style={styles.input}
+    <ScreenContainer>
+      <ScreenHeader
+        eyebrow="Venues"
+        title="Theatres"
+        subtitle="Explore venues by name, location, and capacity."
+      />
+
+      <AppCard style={styles.filterCard}>
+        <AppInput
+          label="Search"
           placeholder="Search theatre or location"
           value={searchQuery}
           onChangeText={setSearchQuery}
@@ -94,45 +97,55 @@ export default function TheatresScreen({ navigation }) {
           onSubmitEditing={searchTheatres}
         />
         <View style={styles.filterActions}>
-          <Button title="Search" onPress={searchTheatres} />
-          <Button title="Clear" onPress={clearSearch} />
+          <AppButton title="Search" onPress={searchTheatres} />
+          <AppButton title="Clear" onPress={clearSearch} variant="secondary" />
         </View>
-      </View>
-      {error ? (
-        <View style={styles.messageBlock}>
-          <Text style={styles.error}>{error}</Text>
-          <Button title="Try again" onPress={loadTheatres} />
-        </View>
-      ) : null}
+      </AppCard>
+
+      {error ? <ErrorState message={error} onRetry={loadTheatres} /> : null}
+
       <FlatList
         data={theatres}
         keyExtractor={(item, index) => String(item.theatre_id ?? item.id ?? index)}
-        ListEmptyComponent={<Text style={styles.empty}>No theatres found.</Text>}
+        contentContainerStyle={styles.listContent}
+        ListEmptyComponent={!error ? <EmptyState message="No theatres found." /> : null}
         renderItem={({ item }) => (
-          <View style={styles.item}>
-            <Text style={styles.itemTitle}>{valueFor(item, ['name', 'theatre_name'], 'Untitled theatre')}</Text>
-            <Text style={styles.itemText}>Location: {valueFor(item, ['location', 'address', 'city'])}</Text>
-            <Text style={styles.itemText}>Capacity: {valueFor(item, ['capacity', 'total_seats'])}</Text>
-          </View>
+          <AppCard style={styles.item}>
+            <View style={styles.cardHeader}>
+              <Text style={styles.itemTitle}>{valueFor(item, ['name', 'theatre_name'], 'Untitled theatre')}</Text>
+              <Pill tone="accent">Venue</Pill>
+            </View>
+            <MetaRow label="Location" value={valueFor(item, ['location', 'address', 'city'])} />
+            <MetaRow label="Capacity" value={valueFor(item, ['capacity', 'total_seats'])} />
+          </AppCard>
         )}
       />
-      <Button title="Back to Home" onPress={() => navigation.navigate('Home')} />
-    </View>
+
+      <AppButton title="Back to Home" onPress={() => navigation.navigate('Home')} variant="ghost" />
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, paddingTop: 56 },
-  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  title: { fontSize: 26, fontWeight: 'bold', marginBottom: 16 },
-  statusText: { marginTop: 12, color: '#555' },
-  messageBlock: { marginBottom: 16 },
-  error: { color: '#cc0000', marginBottom: 8 },
-  empty: { color: '#555', textAlign: 'center', marginTop: 24 },
-  filters: { marginBottom: 16 },
-  input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 6, padding: 10, marginBottom: 10 },
-  filterActions: { gap: 8 },
-  item: { borderWidth: 1, borderColor: '#ddd', borderRadius: 6, padding: 14, marginBottom: 12 },
-  itemTitle: { fontSize: 18, fontWeight: '600', marginBottom: 6 },
-  itemText: { color: '#444', marginTop: 2 },
+  filterCard: {
+    marginBottom: spacing.lg,
+  },
+  filterActions: {
+    gap: spacing.sm,
+  },
+  listContent: {
+    paddingBottom: spacing.lg,
+  },
+  item: {
+    marginBottom: spacing.md,
+  },
+  cardHeader: {
+    gap: spacing.md,
+    marginBottom: spacing.sm,
+  },
+  itemTitle: {
+    color: colors.text,
+    fontSize: 20,
+    fontWeight: '800',
+  },
 });

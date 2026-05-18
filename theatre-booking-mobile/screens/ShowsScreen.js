@@ -1,15 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Button,
-  FlatList,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { FlatList, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import AppButton from '../components/AppButton';
+import AppCard from '../components/AppCard';
+import AppInput from '../components/AppInput';
+import ScreenContainer from '../components/ScreenContainer';
+import { EmptyState, ErrorState, LoadingState } from '../components/StateView';
+import { MetaRow, ScreenHeader } from '../components/TextBits';
+import { colors, radius, spacing } from '../theme';
 import api from '../services/api';
 
 function asList(data) {
@@ -95,19 +92,23 @@ export default function ShowsScreen({ navigation }) {
 
   if (loading) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator />
-        <Text style={styles.statusText}>Loading shows...</Text>
-      </View>
+      <ScreenContainer>
+        <LoadingState title="Loading shows..." />
+      </ScreenContainer>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Shows</Text>
-      <View style={styles.filters}>
-        <TextInput
-          style={styles.input}
+    <ScreenContainer>
+      <ScreenHeader
+        eyebrow="Now playing"
+        title="Shows"
+        subtitle="Search titles, filter by theatre, and tap a show to reserve seats."
+      />
+
+      <AppCard style={styles.filterCard}>
+        <AppInput
+          label="Show title"
           placeholder="Search show title"
           value={titleQuery}
           onChangeText={setTitleQuery}
@@ -115,8 +116,8 @@ export default function ShowsScreen({ navigation }) {
           onSubmitEditing={searchShows}
         />
         <View style={styles.filterActions}>
-          <Button title="Search" onPress={searchShows} />
-          <Button title="Clear" onPress={clearFilters} />
+          <AppButton title="Search" onPress={searchShows} />
+          <AppButton title="Clear" onPress={clearFilters} variant="secondary" />
         </View>
         {theatres.length ? (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.theatreFilters}>
@@ -144,59 +145,97 @@ export default function ShowsScreen({ navigation }) {
             })}
           </ScrollView>
         ) : null}
-      </View>
-      {error ? (
-        <View style={styles.messageBlock}>
-          <Text style={styles.error}>{error}</Text>
-          <Button title="Try again" onPress={loadShows} />
-        </View>
-      ) : null}
+      </AppCard>
+
+      {error ? <ErrorState message={error} onRetry={loadShows} /> : null}
+
       <FlatList
         data={shows}
         keyExtractor={(item, index) => String(showIdFor(item) ?? index)}
-        ListEmptyComponent={<Text style={styles.empty}>No shows found.</Text>}
+        contentContainerStyle={styles.listContent}
+        ListEmptyComponent={!error ? <EmptyState message="No shows found." /> : null}
         renderItem={({ item }) => {
           const showId = showIdFor(item);
 
           return (
             <Pressable
-              style={({ pressed }) => [styles.item, pressed && styles.itemPressed]}
               disabled={!showId}
               onPress={() => navigation.navigate('ShowDetails', { showId })}
+              style={({ pressed }) => [pressed && styles.cardPressed]}
             >
-              <Text style={styles.itemTitle}>{valueFor(item, ['title', 'name', 'show_name'], 'Untitled show')}</Text>
-              <Text style={styles.itemText}>Theatre: {valueFor(item, ['theatre_name', 'theatre', 'venue'])}</Text>
-              <Text style={styles.itemText}>Date: {valueFor(item, ['show_date', 'date'])}</Text>
-              <Text style={styles.itemText}>Time: {valueFor(item, ['show_time', 'time', 'start_time'])}</Text>
-              {showId ? <Text style={styles.linkText}>View details</Text> : null}
+              <AppCard style={styles.item}>
+                <Text style={styles.itemTitle}>{valueFor(item, ['title', 'name', 'show_name'], 'Untitled show')}</Text>
+                <MetaRow label="Theatre" value={valueFor(item, ['theatre_name', 'theatre', 'venue'])} />
+                <View style={styles.metaGrid}>
+                  <MetaRow label="Date" value={valueFor(item, ['show_date', 'date'])} />
+                  <MetaRow label="Time" value={valueFor(item, ['show_time', 'time', 'start_time'])} />
+                </View>
+                {showId ? <Text style={styles.linkText}>View details and showtimes</Text> : null}
+              </AppCard>
             </Pressable>
           );
         }}
       />
-      <Button title="Back to Home" onPress={() => navigation.navigate('Home')} />
-    </View>
+
+      <AppButton title="Back to Home" onPress={() => navigation.navigate('Home')} variant="ghost" />
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, paddingTop: 56 },
-  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  title: { fontSize: 26, fontWeight: 'bold', marginBottom: 16 },
-  statusText: { marginTop: 12, color: '#555' },
-  messageBlock: { marginBottom: 16 },
-  error: { color: '#cc0000', marginBottom: 8 },
-  empty: { color: '#555', textAlign: 'center', marginTop: 24 },
-  filters: { marginBottom: 16 },
-  input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 6, padding: 10, marginBottom: 10 },
-  filterActions: { gap: 8, marginBottom: 10 },
-  theatreFilters: { marginTop: 2 },
-  filterChip: { borderWidth: 1, borderColor: '#bbb', borderRadius: 6, paddingVertical: 8, paddingHorizontal: 12, marginRight: 8 },
-  filterChipActive: { backgroundColor: '#007AFF', borderColor: '#007AFF' },
-  filterChipText: { color: '#222' },
-  filterChipTextActive: { color: '#fff', fontWeight: '600' },
-  item: { borderWidth: 1, borderColor: '#ddd', borderRadius: 6, padding: 14, marginBottom: 12 },
-  itemPressed: { backgroundColor: '#f1f6ff' },
-  itemTitle: { fontSize: 18, fontWeight: '600', marginBottom: 6 },
-  itemText: { color: '#444', marginTop: 2 },
-  linkText: { color: '#007AFF', marginTop: 10, fontWeight: '600' },
+  filterCard: {
+    marginBottom: spacing.lg,
+  },
+  filterActions: {
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  theatreFilters: {
+    marginTop: spacing.xs,
+  },
+  filterChip: {
+    backgroundColor: colors.surfaceRaised,
+    borderColor: colors.borderSoft,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    marginRight: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  filterChipActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.accent,
+  },
+  filterChipText: {
+    color: colors.textMuted,
+    fontWeight: '700',
+  },
+  filterChipTextActive: {
+    color: colors.white,
+    fontWeight: '800',
+  },
+  listContent: {
+    paddingBottom: spacing.lg,
+  },
+  item: {
+    marginBottom: spacing.md,
+  },
+  cardPressed: {
+    opacity: 0.86,
+  },
+  itemTitle: {
+    color: colors.text,
+    fontSize: 20,
+    fontWeight: '800',
+    marginBottom: spacing.sm,
+  },
+  metaGrid: {
+    gap: spacing.md,
+    marginTop: spacing.sm,
+  },
+  linkText: {
+    color: colors.accentSoft,
+    fontWeight: '800',
+    marginTop: spacing.md,
+  },
 });
