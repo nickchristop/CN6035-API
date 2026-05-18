@@ -6,6 +6,7 @@ import {
   FlatList,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
@@ -47,6 +48,9 @@ export default function ReservationsScreen({ navigation }) {
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [cancelingReservationId, setCancelingReservationId] = useState(null);
+  const [editingReservationId, setEditingReservationId] = useState(null);
+  const [editSeatsReserved, setEditSeatsReserved] = useState('');
+  const [updatingReservationId, setUpdatingReservationId] = useState(null);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
 
@@ -74,6 +78,7 @@ export default function ReservationsScreen({ navigation }) {
   async function cancelReservation(reservationId) {
     setError('');
     setSuccess('');
+    setEditingReservationId(null);
     setCancelingReservationId(reservationId);
     try {
       await api.delete(`/reservations/${reservationId}`);
@@ -108,6 +113,71 @@ export default function ReservationsScreen({ navigation }) {
     );
   }
 
+  function startEditingReservation(item) {
+    const reservationId = reservationIdFor(item);
+
+    if (!reservationId) {
+      setError('Reservation id is missing.');
+      return;
+    }
+
+    setError('');
+    setSuccess('');
+    setEditingReservationId(reservationId);
+    setEditSeatsReserved(valueFor(item, ['seats_reserved', 'seats', 'quantity'], ''));
+  }
+
+  function validateEditSeats() {
+    const trimmedSeats = editSeatsReserved.trim();
+
+    if (!trimmedSeats) {
+      return 'Seats reserved is required.';
+    }
+
+    if (!/^\d+$/.test(trimmedSeats)) {
+      return 'Seats reserved must be a whole number.';
+    }
+
+    if (Number(trimmedSeats) <= 0) {
+      return 'Seats reserved must be greater than 0.';
+    }
+
+    return '';
+  }
+
+  async function updateReservation(reservationId) {
+    const validationError = validateEditSeats();
+
+    if (validationError) {
+      setError(validationError);
+      setSuccess('');
+      return;
+    }
+
+    setError('');
+    setSuccess('');
+    setUpdatingReservationId(reservationId);
+    try {
+      await api.put(`/reservations/${reservationId}`, {
+        seats_reserved: Number(editSeatsReserved.trim()),
+      });
+      await loadReservations({ showSpinner: false });
+      setEditingReservationId(null);
+      setEditSeatsReserved('');
+      setSuccess('Reservation updated successfully.');
+    } catch (err) {
+      setError(err.response?.data?.message ?? err.message ?? 'Unable to update reservation.');
+    } finally {
+      setUpdatingReservationId(null);
+    }
+  }
+
+  function cancelEditingReservation() {
+    setEditingReservationId(null);
+    setEditSeatsReserved('');
+    setError('');
+  }
+
   useEffect(() => {
     loadReservations();
   }, [token]);
@@ -138,6 +208,9 @@ export default function ReservationsScreen({ navigation }) {
         renderItem={({ item }) => {
           const reservationId = reservationIdFor(item);
           const isCanceling = cancelingReservationId === reservationId;
+          const isEditing = editingReservationId === reservationId;
+          const isUpdating = updatingReservationId === reservationId;
+          const hasBusyAction = cancelingReservationId !== null || updatingReservationId !== null;
 
           return (
             <View style={styles.card}>
@@ -148,19 +221,59 @@ export default function ReservationsScreen({ navigation }) {
               <Text style={styles.cardText}>Seats: {valueFor(item, ['seats_reserved', 'seats', 'quantity'])}</Text>
               <Text style={styles.status}>Status: {statusFor(item)}</Text>
               {isActiveReservation(item) ? (
-                <View style={styles.cancelAction}>
-                  {isCanceling ? (
+                <View style={styles.cardActions}>
+                  {isEditing ? (
                     <>
-                      <ActivityIndicator />
-                      <Text style={styles.cancelingText}>Cancelling...</Text>
+                      <Text style={styles.inputLabel}>Seats reserved</Text>
+                      <TextInput
+                        style={styles.input}
+                        value={editSeatsReserved}
+                        onChangeText={setEditSeatsReserved}
+                        keyboardType="number-pad"
+                        placeholder="Seats reserved"
+                        editable={!isUpdating}
+                      />
+                      {isUpdating ? (
+                        <>
+                          <ActivityIndicator />
+                          <Text style={styles.busyText}>Updating...</Text>
+                        </>
+                      ) : (
+                        <View style={styles.editActions}>
+                          <Button
+                            title="Save"
+                            onPress={() => updateReservation(reservationId)}
+                            disabled={hasBusyAction}
+                          />
+                          <Button
+                            title="Cancel Edit"
+                            onPress={cancelEditingReservation}
+                            disabled={hasBusyAction}
+                          />
+                        </View>
+                      )}
                     </>
                   ) : (
-                    <Button
-                      title="Cancel Reservation"
-                      color="#cc0000"
-                      onPress={() => confirmCancelReservation(item)}
-                      disabled={cancelingReservationId !== null}
-                    />
+                    <>
+                      <Button
+                        title="Edit Seats"
+                        onPress={() => startEditingReservation(item)}
+                        disabled={hasBusyAction}
+                      />
+                      {isCanceling ? (
+                        <>
+                          <ActivityIndicator style={styles.inlineSpinner} />
+                          <Text style={styles.busyText}>Cancelling...</Text>
+                        </>
+                      ) : (
+                        <Button
+                          title="Cancel Reservation"
+                          color="#cc0000"
+                          onPress={() => confirmCancelReservation(item)}
+                          disabled={hasBusyAction}
+                        />
+                      )}
+                    </>
                   )}
                 </View>
               ) : null}
@@ -186,6 +299,10 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 18, fontWeight: '600', marginBottom: 6 },
   cardText: { color: '#444', marginTop: 2 },
   status: { color: '#222', fontWeight: '600', marginTop: 8 },
-  cancelAction: { marginTop: 12 },
-  cancelingText: { color: '#555', marginTop: 6 },
+  cardActions: { gap: 8, marginTop: 12 },
+  editActions: { gap: 8 },
+  inputLabel: { color: '#555', fontWeight: '600' },
+  input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 6, padding: 10 },
+  inlineSpinner: { marginTop: 8 },
+  busyText: { color: '#555', marginTop: 6 },
 });
